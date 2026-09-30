@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-slate-200 font-sans antialiased overflow-x-hidden;
+    background-color: #080c14;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-surface/40 backdrop-blur-xl border border-white/[0.04] rounded-2xl shadow-xl shadow-black/10;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .glass-panel {
+    @apply bg-slate-900/60 backdrop-blur-2xl border border-white/[0.03] rounded-3xl shadow-2xl;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400;
+  }
+}
+
+/* Premium Animated Background */
+.ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -2;
+  overflow: hidden;
+}
+
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  right: -5%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.09) 0%, rgba(139, 92, 246, 0.03) 50%, transparent 100%);
+  filter: blur(80px);
+  animation: floatOrb1 25s infinite alternate ease-in-out;
+}
+
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  left: -5%;
+  width: 45%;
+  height: 55%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.06) 0%, rgba(99, 102, 241, 0.02) 60%, transparent 100%);
+  filter: blur(80px);
+  animation: floatOrb2 30s infinite alternate ease-in-out;
+}
+
+@keyframes floatOrb1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.1); }
+  100% { transform: translate(-20px, 10px) scale(0.95); }
+}
+
+@keyframes floatOrb2 {
+  0% { transform: translate(0px, 0px) scale(0.95); }
+  50% { transform: translate(-30px, 40px) scale(1.05); }
+  100% { transform: translate(25px, -15px) scale(1); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-slate-800/80 rounded-full hover:bg-slate-700; }
+
+/* Custom Glow Hover */
+.glow-hover:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.08);
+}
