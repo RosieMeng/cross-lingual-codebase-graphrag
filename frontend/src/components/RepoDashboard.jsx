@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { renderMarkdown } from '../utils/markdown.js';
 
-export default function RepoDashboard({ repo, onSelectSuggestion, summaryData, isLoadingSummary, onRefreshSummary }) {
+export default function RepoDashboard({ onSelectSuggestion, summaryData, isLoadingSummary, onRefreshSummary }) {
   if (isLoadingSummary) {
     return (
       <motion.div 

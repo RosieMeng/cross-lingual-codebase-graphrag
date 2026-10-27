@@ -1,6 +1,8 @@
 import os
 import logging
 import time
+import operator
+import re
 from typing import TypedDict, Annotated, Sequence, Optional
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, END
@@ -9,6 +11,7 @@ from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from .rag_engine import CodeRAGEngine
 from .multilingual_query import PlannerConfig
+from .evidence import audit_citations
 from ..security import normalize_repo_relative_path, resolve_repo_file, validate_repo_name
 
 logger = logging.getLogger(__name__)
@@ -17,6 +20,7 @@ class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     repo_name: str
     original_question: str
+    evidence: Annotated[list[dict], operator.add]
     
 class CodeAgentEngine:
     """Agentic query engine using LangGraph and tool calling."""
@@ -32,6 +36,7 @@ class CodeAgentEngine:
         code_aware_enabled: bool = False,
     ):
         self.repo_name = validate_repo_name(repo_name)
+        self._disable_model_thinking = ollama_model.lower().startswith("qwen3")
         self.persist_dir = persist_dir
         self.clone_dir = clone_dir
         
@@ -49,20 +54,22 @@ class CodeAgentEngine:
             base_url=ollama_base_url,
             model=ollama_model,
             temperature=0,
+            num_predict=int(os.getenv("OLLAMA_MAX_ANSWER_TOKENS", "512")),
         )
         
         # Define Tools
-        def run_semantic_search(query: str, original_question: str | None = None) -> str:
+        def run_semantic_search(query: str, original_question: str | None = None) -> dict:
             if original_question is None:
                 result = self.rag_engine.query(query, k=5)
             else:
                 result = self.rag_engine.query(query, k=5, retrieval_original_question=original_question)
-            return result["answer"] + "\n\nSources: " + ", ".join(result["sources"])
+            return result
 
         @tool
         def semantic_search(query: str) -> str:
             """Search the codebase for code snippets relevant to the query. Returns matching files and code."""
-            return run_semantic_search(query)
+            result = run_semantic_search(query)
+            return result["answer"] + "\n\nSources: " + ", ".join(result["sources"])
 
         @tool
         def read_file(file_path: str) -> str:
@@ -80,7 +87,7 @@ class CodeAgentEngine:
 
             started = time.perf_counter()
             try:
-                response = self.llm_with_tools.invoke(messages)
+                response = self.llm_with_tools.invoke(messages, **({"think": False} if self._disable_model_thinking else {}))
             except Exception as e:
                 logger.warning("Agent model failed: error_type=%s latency_ms=%.1f", type(e).__name__, (time.perf_counter() - started) * 1000)
                 raise
@@ -93,6 +100,7 @@ class CodeAgentEngine:
             last_message = messages[-1]
             
             tool_messages = []
+            retrieved_evidence = []
             for tool_call in last_message.tool_calls:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
@@ -102,12 +110,23 @@ class CodeAgentEngine:
                 try:
                     if tool_name == "semantic_search":
                         planner = getattr(self.rag_engine, "multilingual_planner", None)
+                        parsed = semantic_search.args_schema.model_validate(tool_args)
                         if (planner is not None and planner.config.enabled) or getattr(self.rag_engine, "code_aware_planner", None) is not None:
-                            # Validate model-supplied arguments using the tool's schema.
-                            parsed = semantic_search.args_schema.model_validate(tool_args)
-                            result = run_semantic_search(parsed.query, state["original_question"])
+                            search_result = run_semantic_search(parsed.query, state["original_question"])
                         else:
-                            result = semantic_search.invoke(tool_args)
+                            search_result = run_semantic_search(parsed.query)
+                        known = {item["id"]: item for item in state.get("evidence", []) + retrieved_evidence}
+                        mapping = {}
+                        for item in search_result.get("evidence", []):
+                            local_id = item["citation_id"]
+                            if item["id"] not in known:
+                                item = {**item, "citation_id": f"S{len(known) + 1}"}
+                                known[item["id"]] = item
+                                retrieved_evidence.append(item)
+                            mapping[local_id] = known[item["id"]]["citation_id"]
+                        remapped = re.sub(r"\[S\d+\]", lambda m: f"[{mapping.get(m.group()[1:-1], m.group()[1:-1])}]", search_result["answer"])
+                        references = [f"[{known[e['id']]['citation_id']}] {e['file']}:{e['line_start']}" for e in search_result.get("evidence", [])]
+                        result = remapped + "\n\nSources: " + ", ".join(references)
                     elif tool_name == "read_file":
                         result = read_file.invoke(tool_args)
                     else:
@@ -119,7 +138,7 @@ class CodeAgentEngine:
                     
                 tool_messages.append(ToolMessage(content=str(result), tool_call_id=tool_call["id"]))
                 
-            return {"messages": tool_messages}
+            return {"messages": tool_messages, "evidence": retrieved_evidence}
             
         def should_continue(state: AgentState) -> str:
             messages = state["messages"]
@@ -171,7 +190,7 @@ class CodeAgentEngine:
         return f"Error: Could not read file {file_path}. It might not exist."
         
     def query(self, question: str, k: int = 6, chat_history: Optional[list[dict]] = None) -> dict:
-        system_msg = SystemMessage(content=f"You are an autonomous code agent. You have access to tools to search and read the {self.repo_name} codebase. Always use `semantic_search` first. If you need more context, use `read_file`.")
+        system_msg = SystemMessage(content=f"You are an autonomous code agent. Search the {self.repo_name} codebase using semantic_search first. Cite factual claims with the source IDs returned by the tool, such as [S1]. Never invent IDs. If the evidence is insufficient, say so. Answer in the user's language when possible.")
         messages = [system_msg]
         
         if chat_history:
@@ -185,24 +204,33 @@ class CodeAgentEngine:
         
         try:
             result = self.app.invoke(
-                {"messages": messages, "repo_name": self.repo_name, "original_question": question},
+                {"messages": messages, "repo_name": self.repo_name, "original_question": question, "evidence": []},
                 config={"recursion_limit": 10}
             )
             final_message = result["messages"][-1].content
             if not final_message or not final_message.strip():
                 raise ValueError("Agent returned empty response")
+            tools_executed = any(isinstance(message, ToolMessage) for message in result["messages"])
+            if not tools_executed:
+                fallback = self.rag_engine.query(question=question, k=k, chat_history=chat_history)
+                return {**fallback, "tools_executed": False, "execution_mode": "rag_fallback_no_tools"}
                 
+            evidence = list({item["id"]: item for item in result.get("evidence", [])}.values())
             return {
                 "answer": final_message,
-                "sources": ["Agent Tool Execution"] if any(
-                    isinstance(message, ToolMessage) for message in result["messages"]
-                ) else [],
-                "chunks_used": 0
+                "sources": [f"{item['file']}:{item['line_start']}" for item in evidence],
+                "chunks_used": len(evidence),
+                "evidence": evidence,
+                "citation_audit": audit_citations(final_message, evidence),
+                "tools_executed": True,
+                "execution_mode": "agent",
+                "answer_truncated": getattr(result["messages"][-1], "response_metadata", {}).get("done_reason") == "length",
             }
         except Exception as e:
             logger.warning("Agent execution failed: error_type=%s; falling back to standard RAG", type(e).__name__)
-            return self.rag_engine.query(
+            fallback = self.rag_engine.query(
                 question=question,
                 k=k,
                 chat_history=chat_history
             )
+            return {**fallback, "tools_executed": None, "execution_mode": "rag_fallback_agent_error"}

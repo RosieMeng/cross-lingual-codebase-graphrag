@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Box, Sparkles, Bot, BrainCircuit, FileText, Send, Search
+  Box, Sparkles, Bot, BrainCircuit, Send
 } from 'lucide-react';
 import RepoDashboard from './RepoDashboard.jsx';
 import { renderMarkdown } from '../utils/markdown.js';
+import EvidencePanel from './EvidencePanel.jsx';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
 
@@ -17,15 +18,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const bottomRef = useRef(null);
 
-  useEffect(() => {
-    fetchSummary(false);
-  }, [repo]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping, agentStatusText]);
-
-  const fetchSummary = async (forceRefresh = false) => {
+  const fetchSummary = useCallback(async (forceRefresh = false) => {
     setIsLoadingSummary(true);
     setSummaryData(null);
     try {
@@ -39,7 +32,15 @@ export default function ChatInterface({ repo, messages, setMessages }) {
       console.error("Failed to fetch repo summary", e);
     }
     setIsLoadingSummary(false);
-  };
+  }, [repo]);
+
+  useEffect(() => {
+    fetchSummary(false);
+  }, [fetchSummary]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping, agentStatusText]);
 
   const handleSend = async (e) => {
     e?.preventDefault();
@@ -75,7 +76,11 @@ export default function ChatInterface({ repo, messages, setMessages }) {
             updated[updated.length - 1] = { 
               role: 'assistant', 
               content: data.answer, 
-              sources: data.sources || [] 
+              sources: data.sources || [],
+              evidence: data.evidence || [],
+              citationAudit: data.citation_audit,
+              executionMode: data.execution_mode,
+              answerTruncated: data.answer_truncated
             };
             return updated;
           });
@@ -153,7 +158,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   const updated = [...prev];
                   const lastMsg = updated[updated.length - 1];
                   if (lastMsg && lastMsg.role === 'assistant') {
-                    lastMsg.content += data.content;
+                    updated[updated.length - 1] = { ...lastMsg, content: lastMsg.content + data.content };
                   }
                   return updated;
                 });
@@ -162,7 +167,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   const updated = [...prev];
                   const lastMsg = updated[updated.length - 1];
                   if (lastMsg && lastMsg.role === 'assistant') {
-                    lastMsg.sources = data.sources || [];
+                    updated[updated.length - 1] = { ...lastMsg, sources: data.sources || [], evidence: data.evidence || [], citationAudit: data.citation_audit };
                   }
                   return updated;
                 });
@@ -171,7 +176,16 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   const updated = [...prev];
                   const lastMsg = updated[updated.length - 1];
                   if (lastMsg && lastMsg.role === 'assistant') {
-                    lastMsg.content = `❌ Error: ${data.content}`;
+                    updated[updated.length - 1] = { ...lastMsg, content: `❌ Error: ${data.content}` };
+                  }
+                  return updated;
+                });
+              } else if (data.type === 'done' && data.answer_truncated) {
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastMsg = updated[updated.length - 1];
+                  if (lastMsg && lastMsg.role === 'assistant') {
+                    updated[updated.length - 1] = { ...lastMsg, answerTruncated: true };
                   }
                   return updated;
                 });
@@ -217,6 +231,8 @@ export default function ChatInterface({ repo, messages, setMessages }) {
           </div>
           <button 
             type="button"
+            aria-label="Toggle agent mode"
+            aria-pressed={agentMode}
             onClick={() => setAgentMode(!agentMode)}
             className={`w-9 h-5 rounded-full transition-all duration-300 relative ${agentMode ? 'bg-gradient-to-r from-indigo-500 to-purple-600' : 'bg-slate-800'}`}
           >
@@ -251,22 +267,14 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   className="prose prose-invert max-w-none text-slate-300"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }} 
                 />
-                
-                {/* Inline sources rendering per-message */}
-                {m.sources && m.sources.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-700/30">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1">
-                      <FileText size={11}/> Source Chunks
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {m.sources.map((src, idx) => (
-                        <span key={idx} className="text-[10px] px-2 py-0.5 bg-indigo-500/5 hover:bg-indigo-500/15 border border-indigo-500/10 hover:border-indigo-500/25 text-indigo-400 hover:text-indigo-300 rounded-md font-mono flex items-center gap-1 cursor-default transition-all">
-                          <FileText size={9} className="opacity-50" /> {src}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                {m.executionMode?.startsWith('rag_fallback') && (
+                  <p className="mt-3 text-xs text-amber-300">Agent search did not complete; standard retrieval was used.</p>
                 )}
+                {m.answerTruncated && (
+                  <p className="mt-3 text-xs text-amber-300">The answer reached its length limit and may be incomplete.</p>
+                )}
+
+                {m.role === 'assistant' && m.content && <EvidencePanel evidence={m.evidence} citationAudit={m.citationAudit} />}
               </div>
             </motion.div>
           ))
@@ -306,6 +314,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
           />
           <button 
             type="submit" disabled={!input.trim() || isTyping}
+            aria-label="Send question"
             className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl transition-all disabled:opacity-50 disabled:hover:from-indigo-500 disabled:cursor-not-allowed shadow-md"
           >
             <Send size={18} />

@@ -26,8 +26,9 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_core.messages import SystemMessage, HumanMessage
 import pickle
 from .query_transformer import QueryTransformer
-from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter
+from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter, detect_language
 from .code_aware_query import CodeAwareQueryPlanner
+from .evidence import evidence_from_docs, audit_citations, chunk_identity
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +39,13 @@ of the {repo_name} codebase. You answer questions about code architecture, \
 implementation details, and specific functions.
 
 Rules:
-1. ALWAYS cite specific file paths and line numbers from the provided context
-2. If code is shown, explain it clearly before the technical details
-3. If the answer spans multiple files, explain how they connect
-4. If the answer is not in the provided context, say "I don't see that in the indexed code"
-5. Format file citations as: `filename.py:line_number`
-6. Use markdown formatting for code blocks and structure your answer clearly
-7. Be concise but thorough — developers value precision over verbosity
+1. Cite each factual claim using only the supplied source IDs, such as [S1].
+2. Never invent a source ID. A source ID identifies code, not proof that a claim is true.
+3. Explain only what the shown code supports; do not infer missing behavior.
+4. If evidence is insufficient, explicitly say so instead of guessing.
+5. Answer in the language of the user's question when possible.
+6. Be concise, preserve exact code identifiers, and explain implementation details accurately.
+7. Describe arithmetic and gradient assignments exactly as written. Do not invent equations, examples, or variable relationships. If the relevant operation is not shown, say it is unknown.
 
 You're talking to a developer who wants to understand this codebase quickly."""
 
@@ -56,7 +57,7 @@ QUERY_PROMPT = """Here are the relevant code sections from the {repo_name} repos
 
 Developer's question: {question}
 
-Provide a clear answer with specific file:line citations."""
+Provide a clear answer with source IDs such as [S1]. If the code does not support an answer, say so."""
 
 CONDENSE_PROMPT = """Given the following conversation and a follow-up question, \
 rephrase the follow-up question to be a standalone question that includes \
@@ -68,6 +69,13 @@ Chat History:
 Follow Up Question: {question}
 
 Standalone question:"""
+
+
+def _answer_language_instruction(question: str) -> str:
+    language = detect_language(question).language
+    return {"en": "Write the entire answer in English.",
+            "fr": "Rédige toute la réponse en français, sauf les identifiants du code.",
+            "zh": "请用中文回答，代码标识符保持原样。"}.get(language, "Use the user's language where clear; preserve code identifiers.")
 
 
 class CodeRAGEngine:
@@ -106,10 +114,12 @@ class CodeRAGEngine:
             collection_name=repo_name,
         )
         self.repo_name = repo_name
+        self._disable_model_thinking = ollama_model.lower().startswith("qwen3")
         self.llm = ChatOllama(
             base_url=ollama_base_url,
             model=ollama_model,
             temperature=0,
+            num_predict=int(os.getenv("OLLAMA_MAX_ANSWER_TOKENS", "512")),
         )
         self.condense_llm = ChatOllama(
             base_url=ollama_base_url,
@@ -170,7 +180,14 @@ class CodeRAGEngine:
         and produce accurate citations in its response.
         """
         parts = []
-        for i, doc in enumerate(docs, 1):
+        repo_name = getattr(self, "repo_name", None)
+        evidence = {item["id"]: item for item in evidence_from_docs(docs, repo_name)}
+        emitted = set()
+        for doc in docs:
+            identity = chunk_identity(doc, repo_name)
+            if identity not in evidence or identity in emitted:
+                continue
+            emitted.add(identity)
             m = doc.metadata
             file_path = m.get("file", "unknown")
             line_start = m.get("line_start", "?")
@@ -178,7 +195,8 @@ class CodeRAGEngine:
             name = m.get("name", "unknown")
             language = m.get("language", "")
 
-            header = f"### [{i}] {file_path}:{line_start} ({chunk_type}: {name})"
+            label = evidence[identity]["citation_id"]
+            header = f"### [{label}] {file_path}:{line_start} ({chunk_type}: {name})"
             code_fence = f"```{language}\n{doc.page_content}\n```"
             parts.append(f"{header}\n{code_fence}")
 
@@ -213,12 +231,12 @@ class CodeRAGEngine:
         doc_map = {}
         
         for rank, doc in enumerate(vector_docs):
-            content_key = doc.page_content.strip()
+            content_key = chunk_identity(doc, getattr(self, "repo_name", None))
             doc_map[content_key] = doc
             fused_scores[content_key] = fused_scores.get(content_key, 0) + 1 / (rank + k)
             
         for rank, doc in enumerate(bm25_docs):
-            content_key = doc.page_content.strip()
+            content_key = chunk_identity(doc, getattr(self, "repo_name", None))
             doc_map[content_key] = doc
             fused_scores[content_key] = fused_scores.get(content_key, 0) + 1 / (rank + k)
             
@@ -291,7 +309,7 @@ class CodeRAGEngine:
         seen_vector = set()
         for docs_list in vector_results:
             for doc in docs_list:
-                key = doc.page_content.strip()
+                key = chunk_identity(doc, getattr(self, "repo_name", None))
                 if key not in seen_vector:
                     seen_vector.add(key)
                     vector_docs.append(doc)
@@ -300,7 +318,7 @@ class CodeRAGEngine:
         seen_bm25 = set()
         for docs_list in bm25_results:
             for doc in docs_list:
-                key = doc.page_content.strip()
+                key = chunk_identity(doc, getattr(self, "repo_name", None))
                 if key not in seen_bm25:
                     seen_bm25.add(key)
                     bm25_docs.append(doc)
@@ -368,20 +386,24 @@ class CodeRAGEngine:
         # Retrieve documents concurrently
         docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question if retrieval_original_question is None else retrieval_original_question)
 
-        if not docs:
+        evidence = evidence_from_docs(docs, self.repo_name)
+        if not evidence:
             return {
                 "answer": "I couldn't find any relevant code in the indexed repository. "
                           "Try rephrasing your question or make sure the repository "
                           "has been indexed correctly.",
                 "sources": [],
                 "chunks_used": 0,
+                "evidence": [],
+                "citation_audit": audit_citations("", []),
             }
 
         # Format context and build prompt
         context = self._format_context(docs)
 
         messages = [
-            SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name)),
+            SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" +
+                          _answer_language_instruction(question if retrieval_original_question is None else retrieval_original_question)),
             HumanMessage(content=QUERY_PROMPT.format(
                 repo_name=self.repo_name,
                 context=context,
@@ -389,12 +411,16 @@ class CodeRAGEngine:
             )),
         ]
 
-        answer = self.llm.invoke(messages).content
+        response = self.llm.invoke(messages, **({"think": False} if getattr(self, "_disable_model_thinking", False) else {}))
+        answer = response.content
 
         return {
             "answer": answer,
-            "sources": sources,
+            "sources": [f"{item['file']}:{item['line_start']}" for item in evidence],
             "chunks_used": len(docs),
+            "evidence": evidence,
+            "citation_audit": audit_citations(answer, evidence),
+            "answer_truncated": getattr(response, "response_metadata", {}).get("done_reason") == "length",
         }
 
     async def aquery_stream(
@@ -423,7 +449,8 @@ class CodeRAGEngine:
         # Retrieve documents concurrently
         docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question)
 
-        if not docs:
+        evidence = evidence_from_docs(docs, self.repo_name)
+        if not evidence:
             yield {
                 "type": "token",
                 "content": "I couldn't find any relevant code in the indexed repository.",
@@ -434,7 +461,7 @@ class CodeRAGEngine:
         context = self._format_context(docs)
 
         messages = [
-            SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name)),
+            SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" + _answer_language_instruction(question)),
             HumanMessage(content=QUERY_PROMPT.format(
                 repo_name=self.repo_name,
                 context=context,
@@ -443,13 +470,19 @@ class CodeRAGEngine:
         ]
 
         # Stream tokens
-        async for chunk in self.llm.astream(messages):
+        answer_parts = []
+        truncated = False
+        async for chunk in self.llm.astream(messages, **({"think": False} if getattr(self, "_disable_model_thinking", False) else {})):
+            if getattr(chunk, "response_metadata", {}).get("done_reason") == "length":
+                truncated = True
             if chunk.content:
+                answer_parts.append(chunk.content)
                 yield {"type": "token", "content": chunk.content}
 
         # Send sources at the end
-        yield {"type": "sources", "sources": sources}
-        yield {"type": "done"}
+        yield {"type": "sources", "sources": [f"{item['file']}:{item['line_start']}" for item in evidence], "evidence": evidence,
+               "citation_audit": audit_citations("".join(answer_parts), evidence)}
+        yield {"type": "done", "answer_truncated": truncated}
 
     def get_collection_stats(self) -> dict:
         """Get statistics about the indexed collection."""

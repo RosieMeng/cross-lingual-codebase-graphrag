@@ -20,10 +20,6 @@ function App() {
   const [isIndexing, setIsIndexing] = useState(false);
   const [indexStatus, setIndexStatus] = useState(null);
 
-  useEffect(() => {
-    fetchRepos();
-  }, []);
-
   const fetchRepos = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/repos`);
@@ -35,6 +31,15 @@ function App() {
       console.error("Failed to fetch repos", e);
     }
   };
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${BACKEND_URL}/repos`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (active && data) setRepos(data.repos || []); })
+      .catch(error => console.error('Failed to fetch repos', error));
+    return () => { active = false; };
+  }, []);
 
   const handleIndex = async (e) => {
     e.preventDefault();

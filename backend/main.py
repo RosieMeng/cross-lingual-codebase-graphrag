@@ -160,6 +160,11 @@ class QueryResponse(BaseModel):
     answer: str
     sources: list[str]
     chunks_used: int
+    evidence: list[dict] = Field(default_factory=list)
+    citation_audit: dict = Field(default_factory=lambda: {"status": "not_detected", "unsupported": []})
+    tools_executed: bool | None = False
+    execution_mode: str = "standard"
+    answer_truncated: bool = False
 
 
 # ─── Endpoints ───

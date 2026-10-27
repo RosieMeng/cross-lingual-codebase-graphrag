@@ -161,10 +161,13 @@ def test_agent_does_not_claim_tool_execution_when_model_skips_tools(monkeypatch)
         def invoke(self, messages): return AIMessage(content="Answer without a tool")
     class Rag:
         def __init__(self, **kwargs): pass
+        def query(self, **kwargs): return {"answer": "Fallback answer", "sources": [], "chunks_used": 0}
     monkeypatch.setattr(module, "ChatOllama", Model)
     monkeypatch.setattr(module, "CodeRAGEngine", Rag)
     result = module.CodeAgentEngine("sample").query("question")
     assert result["sources"] == []
+    assert result["execution_mode"] == "rag_fallback_no_tools"
+    assert result["tools_executed"] is False
 
 
 def test_agent_passes_original_question_when_only_code_aware_flag_enabled(monkeypatch):
