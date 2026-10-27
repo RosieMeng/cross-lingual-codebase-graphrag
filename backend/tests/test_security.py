@@ -123,3 +123,73 @@ def test_agent_logs_do_not_include_content_or_tool_arguments(monkeypatch, caplog
     assert secret not in caplog.text
     assert "tool=read_file" in caplog.text
     assert "latency_ms=" in caplog.text
+
+
+def test_agent_search_passes_original_question_to_shared_rag(monkeypatch):
+    from types import SimpleNamespace
+    from langchain_core.messages import AIMessage
+    import reposage.query.agent_engine as module
+    from reposage.query.multilingual_query import PlannerConfig
+    captured = []
+    class Model:
+        def __init__(self, **kwargs): self.calls = 0
+        def bind_tools(self, tools): return self
+        def invoke(self, messages):
+            self.calls += 1
+            if self.calls == 1:
+                return AIMessage(content="", tool_calls=[{"name": "semantic_search", "args": {"query": "How does authenticate_user work?"}, "id": "1"}])
+            return AIMessage(content="answer")
+    class Rag:
+        def __init__(self, **kwargs):
+            self.multilingual_planner = SimpleNamespace(config=kwargs["multilingual_config"])
+        def query(self, question, **kwargs):
+            captured.append((question, kwargs))
+            return {"answer": "found", "sources": []}
+    monkeypatch.setattr(module, "ChatOllama", Model)
+    monkeypatch.setattr(module, "CodeRAGEngine", Rag)
+    engine = module.CodeAgentEngine("sample", multilingual_config=PlannerConfig(enabled=True))
+    assert engine.query("authenticate_user 如何工作？")["answer"] == "answer"
+    assert captured == [("How does authenticate_user work?", {"k": 5, "retrieval_original_question": "authenticate_user 如何工作？"})]
+
+
+def test_agent_does_not_claim_tool_execution_when_model_skips_tools(monkeypatch):
+    from langchain_core.messages import AIMessage
+    import reposage.query.agent_engine as module
+    class Model:
+        def __init__(self, **kwargs): pass
+        def bind_tools(self, tools): return self
+        def invoke(self, messages): return AIMessage(content="Answer without a tool")
+    class Rag:
+        def __init__(self, **kwargs): pass
+    monkeypatch.setattr(module, "ChatOllama", Model)
+    monkeypatch.setattr(module, "CodeRAGEngine", Rag)
+    result = module.CodeAgentEngine("sample").query("question")
+    assert result["sources"] == []
+
+
+def test_agent_passes_original_question_when_only_code_aware_flag_enabled(monkeypatch):
+    from types import SimpleNamespace
+    from langchain_core.messages import AIMessage
+    import reposage.query.agent_engine as module
+    captured = []
+    class Model:
+        def __init__(self, **kwargs): self.calls = 0
+        def bind_tools(self, tools): return self
+        def invoke(self, messages):
+            self.calls += 1
+            if self.calls == 1:
+                return AIMessage(content="", tool_calls=[{"name": "semantic_search", "args": {"query": "How does authenticate_user work?"}, "id": "1"}])
+            return AIMessage(content="answer")
+    class Rag:
+        def __init__(self, **kwargs):
+            assert kwargs["code_aware_enabled"] is True
+            self.multilingual_planner = None
+            self.code_aware_planner = SimpleNamespace()
+        def query(self, question, **kwargs):
+            captured.append((question, kwargs))
+            return {"answer": "found", "sources": []}
+    monkeypatch.setattr(module, "ChatOllama", Model)
+    monkeypatch.setattr(module, "CodeRAGEngine", Rag)
+    engine = module.CodeAgentEngine("sample", code_aware_enabled=True)
+    assert engine.query("authenticate_user 如何工作？")["answer"] == "answer"
+    assert captured[0][1]["retrieval_original_question"] == "authenticate_user 如何工作？"

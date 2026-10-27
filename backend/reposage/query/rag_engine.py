@@ -17,6 +17,7 @@ answers.
 import os
 import logging
 import copy
+from dataclasses import replace
 from typing import Optional, AsyncGenerator
 
 from langchain_ollama import ChatOllama, OllamaEmbeddings
@@ -25,6 +26,8 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_core.messages import SystemMessage, HumanMessage
 import pickle
 from .query_transformer import QueryTransformer
+from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter
+from .code_aware_query import CodeAwareQueryPlanner
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +91,8 @@ class CodeRAGEngine:
         ollama_base_url: str = "http://localhost:11434",
         ollama_model: str = "llama3",
         ollama_embed_model: str = "nomic-embed-text",
+        multilingual_config: PlannerConfig | None = None,
+        code_aware_enabled: bool = False,
     ):
         embed = OllamaEmbeddings(
             base_url=ollama_base_url,
@@ -115,6 +120,16 @@ class CodeRAGEngine:
             ollama_base_url=ollama_base_url,
             model=ollama_model,
         )
+        config = multilingual_config or PlannerConfig()
+        rewriter = None
+        if config.enabled or code_aware_enabled:
+            try:
+                rewriter = ollama_rewriter(config, ollama_base_url, ollama_model)
+            except Exception as e:
+                logger.warning("Multilingual rewriter unavailable: %s", type(e).__name__)
+        self.multilingual_planner = MultilingualQueryPlanner(config, rewriter)
+        self.code_aware_planner = (CodeAwareQueryPlanner(MultilingualQueryPlanner(replace(config, enabled=True), rewriter))
+                                   if code_aware_enabled else None)
         
         # Load BM25 index if available
         self.bm25_retriever = None
@@ -211,10 +226,37 @@ class CodeRAGEngine:
         sorted_docs = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
         return [doc_map[key] for key, _ in sorted_docs]
 
-    def _retrieve_and_fuse(self, question: str, k: int, stage_observer=None) -> tuple[list, list[str]]:
+    def _retrieve_and_fuse(self, question: str, k: int, stage_observer=None,
+                           original_question: str | None = None, plan_observer=None,
+                           retrieval_plan=None) -> tuple[list, list[str]]:
         """Retrieve relevant code chunks and enrich context in parallel using a ThreadPoolExecutor."""
         # Expand queries once
-        queries = self.query_transformer.expand_query(question)
+        planner = getattr(self, "multilingual_planner", None)
+        code_planner = getattr(self, "code_aware_planner", None)
+        if retrieval_plan is not None or code_planner is not None:
+            original = question if original_question is None else original_question
+            plan = retrieval_plan if retrieval_plan is not None else code_planner.plan(original, k, contextual_question=question)
+            if not plan.requests or any(request.candidate_limit != k or request.variant_index < 0
+                    or request.variant_index >= len(plan.variants) or request.retriever not in {"vector", "bm25"}
+                    for request in plan.requests):
+                raise ValueError("Invalid retrieval plan or candidate budget")
+            vector_queries = [plan.variants[r.variant_index].text for r in plan.requests if r.retriever == "vector"]
+            bm25_queries = [plan.variants[r.variant_index].text for r in plan.requests if r.retriever == "bm25"]
+            if plan_observer:
+                plan_observer(plan)
+            logger.info("Code-aware query plan: language=%s status=%s requests=%d", plan.detection.language, plan.status, len(plan.requests))
+        elif planner is not None and planner.config.enabled:
+            original = question if original_question is None else original_question
+            plan = planner.plan(original, contextual_question=question)
+            if plan_observer:
+                plan_observer(plan)
+            queries = [variant.text for variant in plan.variants]
+            vector_queries = bm25_queries = queries
+            logger.info("Multilingual query plan: language=%s status=%s variants=%d",
+                        plan.detection.language, plan.status, len(queries))
+        else:
+            queries = self.query_transformer.expand_query(question)
+            vector_queries = bm25_queries = queries
         
         vector_retriever = self.vectorstore.as_retriever(search_kwargs={"k": k})
         
@@ -238,8 +280,8 @@ class CodeRAGEngine:
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             # Concurrently fetch vector and BM25 matching documents across all queries
-            vector_futures = [executor.submit(retrieve_vector, q) for q in queries]
-            bm25_futures = [executor.submit(retrieve_bm25, q) for q in queries] if self.bm25_retriever else []
+            vector_futures = [executor.submit(retrieve_vector, q) for q in vector_queries]
+            bm25_futures = [executor.submit(retrieve_bm25, q) for q in bm25_queries] if self.bm25_retriever else []
             
             vector_results = [f.result() for f in vector_futures]
             bm25_results = [f.result() for f in bm25_futures]
@@ -306,6 +348,7 @@ class CodeRAGEngine:
         question: str,
         k: int = 6,
         chat_history: Optional[list[dict]] = None,
+        retrieval_original_question: Optional[str] = None,
     ) -> dict:
         """Answer a question about the codebase using RAG.
 
@@ -323,7 +366,7 @@ class CodeRAGEngine:
         )
 
         # Retrieve documents concurrently
-        docs, sources = self._retrieve_and_fuse(standalone_question, k)
+        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question if retrieval_original_question is None else retrieval_original_question)
 
         if not docs:
             return {
@@ -378,7 +421,7 @@ class CodeRAGEngine:
         )
 
         # Retrieve documents concurrently
-        docs, sources = self._retrieve_and_fuse(standalone_question, k)
+        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question)
 
         if not docs:
             yield {

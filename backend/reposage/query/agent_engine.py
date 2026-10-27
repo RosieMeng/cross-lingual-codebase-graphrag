@@ -8,6 +8,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from .rag_engine import CodeRAGEngine
+from .multilingual_query import PlannerConfig
 from ..security import normalize_repo_relative_path, resolve_repo_file, validate_repo_name
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     repo_name: str
+    original_question: str
     
 class CodeAgentEngine:
     """Agentic query engine using LangGraph and tool calling."""
@@ -26,6 +28,8 @@ class CodeAgentEngine:
         ollama_base_url: str = "http://localhost:11434",
         ollama_model: str = "qwen2.5-coder:7b", # Best for tools
         ollama_embed_model: str = "nomic-embed-text",
+        multilingual_config: PlannerConfig | None = None,
+        code_aware_enabled: bool = False,
     ):
         self.repo_name = validate_repo_name(repo_name)
         self.persist_dir = persist_dir
@@ -37,6 +41,8 @@ class CodeAgentEngine:
             ollama_base_url=ollama_base_url,
             ollama_model=ollama_model,
             ollama_embed_model=ollama_embed_model,
+            multilingual_config=multilingual_config,
+            code_aware_enabled=code_aware_enabled,
         )
         
         self.llm = ChatOllama(
@@ -46,11 +52,17 @@ class CodeAgentEngine:
         )
         
         # Define Tools
+        def run_semantic_search(query: str, original_question: str | None = None) -> str:
+            if original_question is None:
+                result = self.rag_engine.query(query, k=5)
+            else:
+                result = self.rag_engine.query(query, k=5, retrieval_original_question=original_question)
+            return result["answer"] + "\n\nSources: " + ", ".join(result["sources"])
+
         @tool
         def semantic_search(query: str) -> str:
             """Search the codebase for code snippets relevant to the query. Returns matching files and code."""
-            result = self.rag_engine.query(query, k=5)
-            return result["answer"] + "\n\nSources: " + ", ".join(result["sources"])
+            return run_semantic_search(query)
 
         @tool
         def read_file(file_path: str) -> str:
@@ -89,7 +101,13 @@ class CodeAgentEngine:
                 started = time.perf_counter()
                 try:
                     if tool_name == "semantic_search":
-                        result = semantic_search.invoke(tool_args)
+                        planner = getattr(self.rag_engine, "multilingual_planner", None)
+                        if (planner is not None and planner.config.enabled) or getattr(self.rag_engine, "code_aware_planner", None) is not None:
+                            # Validate model-supplied arguments using the tool's schema.
+                            parsed = semantic_search.args_schema.model_validate(tool_args)
+                            result = run_semantic_search(parsed.query, state["original_question"])
+                        else:
+                            result = semantic_search.invoke(tool_args)
                     elif tool_name == "read_file":
                         result = read_file.invoke(tool_args)
                     else:
@@ -167,7 +185,7 @@ class CodeAgentEngine:
         
         try:
             result = self.app.invoke(
-                {"messages": messages, "repo_name": self.repo_name},
+                {"messages": messages, "repo_name": self.repo_name, "original_question": question},
                 config={"recursion_limit": 10}
             )
             final_message = result["messages"][-1].content
@@ -176,7 +194,9 @@ class CodeAgentEngine:
                 
             return {
                 "answer": final_message,
-                "sources": ["Agent Tool Execution"],
+                "sources": ["Agent Tool Execution"] if any(
+                    isinstance(message, ToolMessage) for message in result["messages"]
+                ) else [],
                 "chunks_used": 0
             }
         except Exception as e:

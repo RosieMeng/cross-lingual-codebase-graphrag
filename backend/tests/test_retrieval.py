@@ -384,3 +384,89 @@ def test_graph_enrichment_does_not_contaminate_later_query():
     second, _ = engine._retrieve_and_fuse("second", 1)
     assert second[0].metadata["type"] == "function"
     assert [stage for stage, _ in stages] == ["rrf", "graph_enrichment"]
+
+
+def test_multilingual_plan_integrates_with_shared_retrieval_and_legacy_default():
+    from reposage.query.multilingual_query import MultilingualQueryPlanner, PlannerConfig
+    doc = _document("src/a.py", "authenticate_user", 1)
+    engine = _retrieval_engine([doc], [doc])
+    original = "Comment fonctionne authenticate_user dans le code ?"
+    contextual = "How does authenticate_user work in the code?"
+    plans = []
+    engine.multilingual_planner = MultilingualQueryPlanner(PlannerConfig(), lambda _: pytest.fail("disabled"))
+    engine._retrieve_and_fuse(contextual, 1, original_question=original, plan_observer=plans.append)
+    assert engine.vectorstore.retriever.queries == [contextual]
+    assert not plans
+    engine.vectorstore.retriever.queries.clear()
+    engine.bm25_retriever.queries.clear()
+    engine.multilingual_planner = MultilingualQueryPlanner(
+        PlannerConfig(enabled=True), lambda _: "How does REPOSAGEPROTECTED0TOKEN work?")
+    engine._retrieve_and_fuse(contextual, 1, original_question=original, plan_observer=plans.append)
+    expected = [original, contextual, "How does authenticate_user work?"]
+    assert sorted(engine.vectorstore.retriever.queries) == sorted(expected)
+    assert sorted(engine.bm25_retriever.queries) == sorted(expected)
+    assert [v.provenance for v in plans[0].variants] == ["original", "contextual", "english_rewrite"]
+
+
+def test_disabled_planner_retains_existing_expansion():
+    from reposage.query.multilingual_query import MultilingualQueryPlanner, PlannerConfig
+    doc = _document("src/a.py", "alpha", 1)
+    engine = _retrieval_engine([doc], [doc])
+    engine.query_transformer.expand_query = lambda q: [q, "legacy expansion"]
+    engine.multilingual_planner = MultilingualQueryPlanner(PlannerConfig())
+    engine._retrieve_and_fuse("original", 1)
+    assert sorted(engine.vectorstore.retriever.queries) == ["legacy expansion", "original"]
+    assert sorted(engine.bm25_retriever.queries) == ["legacy expansion", "original"]
+
+
+def test_code_aware_planner_routes_one_query_per_retriever_and_keeps_rrf_trace():
+    from reposage.query.multilingual_query import MultilingualQueryPlanner, PlannerConfig
+    from reposage.query.code_aware_query import CodeAwareQueryPlanner
+    doc = _document("src/a.py", "authenticate_user", 1)
+    engine = _retrieval_engine([doc], [doc])
+    engine.code_aware_planner = CodeAwareQueryPlanner(MultilingualQueryPlanner(
+        PlannerConfig(enabled=True), lambda _: "How does REPOSAGEPROTECTED0TOKEN work?"))
+    original = "Comment fonctionne authenticate_user dans le code ?"
+    stages, plans = [], []
+    docs, _ = engine._retrieve_and_fuse(original, 2, stage_observer=lambda s, d: stages.append(s), plan_observer=plans.append)
+    assert engine.vectorstore.retriever.queries == ["How does authenticate_user work?"]
+    assert engine.bm25_retriever.queries == [original]
+    assert [d.metadata["name"] for d in docs] == ["authenticate_user"]
+    assert "rrf" in stages
+    assert len(plans[0].requests) == 2
+
+
+def test_streaming_query_uses_code_aware_routes():
+    import asyncio
+    from types import SimpleNamespace
+    from reposage.query.multilingual_query import MultilingualQueryPlanner, PlannerConfig
+    from reposage.query.code_aware_query import CodeAwareQueryPlanner
+    doc = _document("src/a.py", "authenticate_user", 1)
+    engine = _retrieval_engine([doc], [doc])
+    engine.code_aware_planner = CodeAwareQueryPlanner(MultilingualQueryPlanner(
+        PlannerConfig(enabled=True), lambda _: "How does REPOSAGEPROTECTED0TOKEN work?"))
+    engine.repo_name = "sample"
+    class LLM:
+        async def astream(self, messages):
+            yield SimpleNamespace(content="answer")
+    engine.llm = LLM()
+    question = "Comment fonctionne authenticate_user dans le code ?"
+    async def collect(): return [event async for event in engine.aquery_stream(question)]
+    events = asyncio.run(collect())
+    assert events[0]["content"] == "answer"
+    assert engine.bm25_retriever.queries == [question]
+    assert engine.vectorstore.retriever.queries == ["How does authenticate_user work?"]
+
+
+def test_standard_query_retains_user_question_after_condensation():
+    from types import SimpleNamespace
+    from reposage.query.multilingual_query import MultilingualQueryPlanner, PlannerConfig
+    doc = _document("src/a.py", "authenticate_user", 1)
+    engine = _retrieval_engine([doc], [doc])
+    engine.multilingual_planner = MultilingualQueryPlanner(PlannerConfig(enabled=True), lambda _: "How does REPOSAGEPROTECTED0TOKEN work?")
+    engine.repo_name = "sample"
+    engine.llm = SimpleNamespace(invoke=lambda _: SimpleNamespace(content="answer"))
+    engine._condense_question = lambda question, history: "How does authenticate_user work in the code?"
+    original = "Comment fonctionne authenticate_user dans le code ?"
+    assert engine.query(original, chat_history=[{"role": "user", "content": "previous"}])["answer"] == "answer"
+    assert original in engine.vectorstore.retriever.queries

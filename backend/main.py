@@ -29,6 +29,7 @@ from reposage.ingestion.repo_indexer import RepoIndexer
 from reposage.query.rag_engine import CodeRAGEngine
 from reposage.query.agent_engine import CodeAgentEngine
 from reposage.query.query_transformer import QueryTransformer
+from reposage.query.multilingual_query import PlannerConfig
 from reposage.analysis.repo_summarizer import RepoSummarizer
 from reposage.security import validate_repo_name
 
@@ -46,6 +47,11 @@ OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db")
 CLONE_DIR = os.getenv("CLONE_DIR", "./tmp/reposage")
+MULTILINGUAL_CONFIG = PlannerConfig(
+    enabled=os.getenv("ENABLE_MULTILINGUAL_QUERY_PLANNING", "false").lower() == "true",
+    timeout_seconds=float(os.getenv("MULTILINGUAL_REWRITE_TIMEOUT_SECONDS", "8")),
+)
+CODE_AWARE_ENABLED = os.getenv("ENABLE_CODE_AWARE_QUERY_PLANNING", "false").lower() == "true"
 
 # ─── Shared instances ───
 indexer = RepoIndexer(
@@ -248,6 +254,8 @@ def query_repository(request: QueryRequest):
             ollama_base_url=OLLAMA_BASE_URL,
             ollama_model=OLLAMA_MODEL,
             ollama_embed_model=OLLAMA_EMBED_MODEL,
+            multilingual_config=MULTILINGUAL_CONFIG,
+            code_aware_enabled=CODE_AWARE_ENABLED,
         )
     except Exception as e:
         raise HTTPException(
@@ -291,6 +299,8 @@ async def query_stream(request: QueryRequest):
             ollama_base_url=OLLAMA_BASE_URL,
             ollama_model=OLLAMA_MODEL,
             ollama_embed_model=OLLAMA_EMBED_MODEL,
+            multilingual_config=MULTILINGUAL_CONFIG,
+            code_aware_enabled=CODE_AWARE_ENABLED,
         )
     except Exception as e:
         raise HTTPException(
