@@ -23,6 +23,7 @@ from langchain.schema import Document
 from ..chunkers.python_chunker import PythonASTChunker, CodeChunk
 from ..chunkers.js_chunker import JSChunker
 from ..chunkers.generic_chunker import GenericChunker
+from ..security import validate_repo_name
 import pickle
 from .docstring_gen import DocstringGenerator
 
@@ -116,10 +117,12 @@ class RepoIndexer:
             if not repo_path.exists():
                 raise ValueError(f"Local path {repo_path} does not exist.")
             repo_name = repo_path.name
+            validate_repo_name(repo_name)
             tmp_path = str(repo_path)
             logger.info(f"Indexing local repository at {tmp_path}")
         else:
             repo_name = self._extract_repo_name(github_url)
+            validate_repo_name(repo_name)
             tmp_path = os.path.join(self.clone_dir, repo_name)
 
             # Clone the repository (depth=1 for speed — we don't need git history)
@@ -367,6 +370,7 @@ class RepoIndexer:
         Returns:
             True if successfully deleted, False if not found.
         """
+        repo_name = validate_repo_name(repo_name)
         deleted = False
         collection_dir = os.path.join(self.persist_dir, repo_name)
         if os.path.exists(collection_dir):

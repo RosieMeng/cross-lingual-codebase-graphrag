@@ -16,6 +16,7 @@ answers.
 
 import os
 import logging
+import copy
 from typing import Optional, AsyncGenerator
 
 from langchain_ollama import ChatOllama, OllamaEmbeddings
@@ -125,7 +126,7 @@ class CodeRAGEngine:
                 self.bm25_retriever = BM25Retriever.from_documents(docs)
                 logger.info(f"Loaded BM25 index with {len(docs)} documents.")
             except Exception as e:
-                logger.error(f"Failed to load BM25 index: {e}")
+                logger.error("Failed to load BM25 index: %s", type(e).__name__)
 
         # Load Knowledge Graph
         self.graph = None
@@ -139,7 +140,7 @@ class CodeRAGEngine:
             except ImportError:
                 logger.warning("networkx not installed, skipping GraphRAG.")
             except Exception as e:
-                logger.error(f"Failed to load Knowledge Graph: {e}")
+                logger.error("Failed to load Knowledge Graph: %s", type(e).__name__)
 
 
     def _format_context(self, docs) -> str:
@@ -188,7 +189,7 @@ class CodeRAGEngine:
 
         response = self.condense_llm.invoke(prompt)
         condensed = response.content.strip()
-        logger.info(f"Condensed: '{question}' → '{condensed}'")
+        logger.info("Query condensation completed")
         return condensed
 
     def _reciprocal_rank_fusion(self, vector_docs: list, bm25_docs: list, k: int = 60) -> list:
@@ -210,7 +211,7 @@ class CodeRAGEngine:
         sorted_docs = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
         return [doc_map[key] for key, _ in sorted_docs]
 
-    def _retrieve_and_fuse(self, question: str, k: int) -> tuple[list, list[str]]:
+    def _retrieve_and_fuse(self, question: str, k: int, stage_observer=None) -> tuple[list, list[str]]:
         """Retrieve relevant code chunks and enrich context in parallel using a ThreadPoolExecutor."""
         # Expand queries once
         queries = self.query_transformer.expand_query(question)
@@ -224,7 +225,7 @@ class CodeRAGEngine:
             try:
                 return vector_retriever.invoke(q)
             except Exception as e:
-                logger.warning(f"Vector retrieval failed for '{q}': {e}")
+                logger.warning("Vector retrieval failed: %s", type(e).__name__)
                 return []
                 
         def retrieve_bm25(q):
@@ -232,7 +233,7 @@ class CodeRAGEngine:
                 self.bm25_retriever.k = k
                 return self.bm25_retriever.invoke(q)
             except Exception as e:
-                logger.warning(f"BM25 retrieval failed for '{q}': {e}")
+                logger.warning("BM25 retrieval failed: %s", type(e).__name__)
                 return []
 
         with ThreadPoolExecutor(max_workers=10) as executor:
@@ -264,11 +265,14 @@ class CodeRAGEngine:
 
         # Reciprocal Rank Fusion
         docs = self._reciprocal_rank_fusion(vector_docs, bm25_docs)[:k]
+        if stage_observer:
+            stage_observer("rrf", docs)
 
         # GraphRAG Context Enrichment
         if self.graph and self.bm25_retriever:
             doc_lookup = {d.metadata.get("name"): d for d in self.bm25_retriever.docs if d.metadata.get("name")}
             graph_context_docs = []
+            graph_originals = []
             
             for doc in docs:
                 name = doc.metadata.get("name")
@@ -276,13 +280,19 @@ class CodeRAGEngine:
                     try:
                         neighbors = list(self.graph.predecessors(name)) + list(self.graph.successors(name))
                         for n in neighbors[:3]:  # Top 3 neighbors per chunk
-                            if n in doc_lookup and doc_lookup[n] not in docs and doc_lookup[n] not in graph_context_docs:
-                                extra_doc = doc_lookup[n]
+                            if n in doc_lookup and doc_lookup[n] not in docs and doc_lookup[n] not in graph_originals:
+                                graph_originals.append(doc_lookup[n])
+                                extra_doc = copy.copy(doc_lookup[n])
+                                extra_doc.metadata = dict(extra_doc.metadata)
                                 extra_doc.metadata["type"] = extra_doc.metadata.get("type", "") + " (Graph Context)"
                                 graph_context_docs.append(extra_doc)
                     except Exception as e:
-                        logger.warning(f"Graph traversal failed for {name}: {e}")
+                        logger.warning("Graph traversal failed: %s", type(e).__name__)
+                        if stage_observer:
+                            stage_observer("error", {"stage": "graph_enrichment", "error_type": type(e).__name__})
                         
+            if stage_observer:
+                stage_observer("graph_enrichment", graph_context_docs)
             docs.extend(graph_context_docs)
 
         sources = [

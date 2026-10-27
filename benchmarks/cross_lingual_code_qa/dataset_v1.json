@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_kind": "toy_smoke",
+  "validated_research_benchmark": false,
+  "description": "Small aligned EN/FR/ZH retrieval smoke set over the checked-in micrograd example. Queries are engineering fixtures, not a validated or representative research dataset.",
+  "corpus": {
+    "repo_name": "micrograd",
+    "source_path": "backend/tmp/reposage/micrograd",
+    "expected_source_revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c"
+  },
+  "queries": [
+    {
+      "task_id": "autodiff-backward-v1",
+      "query_id": "autodiff-backward-en-v1",
+      "language": "en",
+      "query": "How does backward compute gradients and traverse the computation graph?",
+      "gold": {"file": "micrograd/engine.py", "function": "backward", "line_start": 54}
+    },
+    {
+      "task_id": "autodiff-backward-v1",
+      "query_id": "autodiff-backward-fr-v1",
+      "language": "fr",
+      "query": "Comment backward calcule-t-il les gradients et parcourt-il le graphe de calcul ?",
+      "gold": {"file": "micrograd/engine.py", "function": "backward", "line_start": 54}
+    },
+    {
+      "task_id": "autodiff-backward-v1",
+      "query_id": "autodiff-backward-zh-v1",
+      "language": "zh",
+      "query": "backward 如何遍历计算图并计算梯度？",
+      "gold": {"file": "micrograd/engine.py", "function": "backward", "line_start": 54}
+    },
+    {
+      "task_id": "mlp-forward-v1",
+      "query_id": "mlp-forward-en-v1",
+      "language": "en",
+      "query": "Where does the MLP pass each input through its layers?",
+      "gold": {"file": "micrograd/nn.py", "function": "__call__", "line_start": 51}
+    },
+    {
+      "task_id": "mlp-forward-v1",
+      "query_id": "mlp-forward-fr-v1",
+      "language": "fr",
+      "query": "Où le MLP fait-il passer chaque entrée à travers ses couches ?",
+      "gold": {"file": "micrograd/nn.py", "function": "__call__", "line_start": 51}
+    },
+    {
+      "task_id": "mlp-forward-v1",
+      "query_id": "mlp-forward-zh-v1",
+      "language": "zh",
+      "query": "MLP 在哪里将每个输入依次传过各层？",
+      "gold": {"file": "micrograd/nn.py", "function": "__call__", "line_start": 51}
+    },
+    {
+      "task_id": "multiply-gradient-v1",
+      "query_id": "multiply-gradient-en-v1",
+      "language": "en",
+      "query": "How does Value multiplication propagate gradients to its operands?",
+      "gold": {"file": "micrograd/engine.py", "function": "__mul__", "line_start": 24}
+    },
+    {
+      "task_id": "multiply-gradient-v1",
+      "query_id": "multiply-gradient-fr-v1",
+      "language": "fr",
+      "query": "Comment la multiplication de Value propage-t-elle les gradients à ses opérandes ?",
+      "gold": {"file": "micrograd/engine.py", "function": "__mul__", "line_start": 24}
+    },
+    {
+      "task_id": "multiply-gradient-v1",
+      "query_id": "multiply-gradient-zh-v1",
+      "language": "zh",
+      "query": "Value 的乘法如何将梯度传回两个操作数？",
+      "gold": {"file": "micrograd/engine.py", "function": "__mul__", "line_start": 24}
+    }
+  ]
+}

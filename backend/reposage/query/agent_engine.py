@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from typing import TypedDict, Annotated, Sequence, Optional
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, END
@@ -7,6 +8,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.tools import tool
 from langchain_ollama import ChatOllama
 from .rag_engine import CodeRAGEngine
+from ..security import normalize_repo_relative_path, resolve_repo_file, validate_repo_name
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ class CodeAgentEngine:
         ollama_model: str = "qwen2.5-coder:7b", # Best for tools
         ollama_embed_model: str = "nomic-embed-text",
     ):
-        self.repo_name = repo_name
+        self.repo_name = validate_repo_name(repo_name)
         self.persist_dir = persist_dir
         self.clone_dir = clone_dir
         
@@ -52,37 +54,8 @@ class CodeAgentEngine:
 
         @tool
         def read_file(file_path: str) -> str:
-            """Read the full content of a specific file from the repository."""
-            full_path = os.path.join(self.clone_dir, self.repo_name, file_path)
-            if not os.path.exists(full_path):
-                # Fallback: Try to reconstruct file from BM25 database
-                if self.rag_engine.bm25_retriever and self.rag_engine.bm25_retriever.docs:
-                    normalized_target = file_path.replace("\\", "/").strip("/")
-                    file_chunks = [
-                        doc for doc in self.rag_engine.bm25_retriever.docs
-                        if doc.metadata.get("file", "").replace("\\", "/").strip("/") == normalized_target
-                    ]
-                    if file_chunks:
-                        # Sort chunks by line_start
-                        file_chunks.sort(key=lambda d: d.metadata.get("line_start", 0))
-                        reconstructed_content = []
-                        for doc in file_chunks:
-                            content = doc.page_content
-                            # Contextual Retrieval strip logic
-                            if content.startswith("// Context: ") or content.startswith("# Context: "):
-                                parts = content.split("\n\n", 1)
-                                if len(parts) > 1:
-                                    content = parts[1]
-                            reconstructed_content.append(content)
-                        return "\n\n".join(reconstructed_content)
-
-                return f"Error: Could not read file {file_path}. It might not exist."
-            
-            try:
-                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
-                    return f.read()
-            except Exception as e:
-                return f"Error reading file: {e}"
+            """Read a repository-relative file without leaving the repository."""
+            return self._read_file(file_path)
 
         self.tools = [semantic_search, read_file]
         self.llm_with_tools = self.llm.bind_tools(self.tools)
@@ -92,7 +65,15 @@ class CodeAgentEngine:
         
         def call_model(state: AgentState):
             messages = state["messages"]
-            response = self.llm_with_tools.invoke(messages)
+
+            started = time.perf_counter()
+            try:
+                response = self.llm_with_tools.invoke(messages)
+            except Exception as e:
+                logger.warning("Agent model failed: error_type=%s latency_ms=%.1f", type(e).__name__, (time.perf_counter() - started) * 1000)
+                raise
+            logger.info("Agent model completed: tool_count=%d latency_ms=%.1f", len(response.tool_calls), (time.perf_counter() - started) * 1000)
+
             return {"messages": [response]}
             
         def call_tools(state: AgentState):
@@ -104,13 +85,19 @@ class CodeAgentEngine:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
                 
-                logger.info(f"Agent using tool: {tool_name} with {tool_args}")
-                if tool_name == "semantic_search":
-                    result = semantic_search.invoke(tool_args)
-                elif tool_name == "read_file":
-                    result = read_file.invoke(tool_args)
-                else:
-                    result = f"Unknown tool {tool_name}"
+                safe_name = tool_name if tool_name in {"semantic_search", "read_file"} else "unknown"
+                started = time.perf_counter()
+                try:
+                    if tool_name == "semantic_search":
+                        result = semantic_search.invoke(tool_args)
+                    elif tool_name == "read_file":
+                        result = read_file.invoke(tool_args)
+                    else:
+                        result = "Unknown tool"
+                except Exception as e:
+                    logger.warning("Agent tool failed: tool=%s error_type=%s latency_ms=%.1f", safe_name, type(e).__name__, (time.perf_counter() - started) * 1000)
+                    raise
+                logger.info("Agent tool completed: tool=%s latency_ms=%.1f", safe_name, (time.perf_counter() - started) * 1000)
                     
                 tool_messages.append(ToolMessage(content=str(result), tool_call_id=tool_call["id"]))
                 
@@ -131,6 +118,39 @@ class CodeAgentEngine:
         workflow.add_edge("action", "agent")
         
         self.app = workflow.compile()
+
+    def _read_file(self, file_path: str) -> str:
+        try:
+            normalized_target = normalize_repo_relative_path(file_path)
+            full_path = resolve_repo_file(self.clone_dir, self.repo_name, file_path)
+        except (OSError, ValueError):
+            return "Error: Invalid file path."
+
+        if full_path.is_file():
+            try:
+                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
+                    return f.read()
+            except Exception as e:
+                return f"Error reading file: {e}"
+
+        if self.rag_engine.bm25_retriever and self.rag_engine.bm25_retriever.docs:
+            file_chunks = [
+                doc for doc in self.rag_engine.bm25_retriever.docs
+                if doc.metadata.get("file", "").replace("\\", "/") == normalized_target
+            ]
+            if file_chunks:
+                file_chunks.sort(key=lambda d: d.metadata.get("line_start", 0))
+                reconstructed_content = []
+                for doc in file_chunks:
+                    content = doc.page_content
+                    if content.startswith("// Context: ") or content.startswith("# Context: "):
+                        parts = content.split("\n\n", 1)
+                        if len(parts) > 1:
+                            content = parts[1]
+                    reconstructed_content.append(content)
+                return "\n\n".join(reconstructed_content)
+
+        return f"Error: Could not read file {file_path}. It might not exist."
         
     def query(self, question: str, k: int = 6, chat_history: Optional[list[dict]] = None) -> dict:
         system_msg = SystemMessage(content=f"You are an autonomous code agent. You have access to tools to search and read the {self.repo_name} codebase. Always use `semantic_search` first. If you need more context, use `read_file`.")
@@ -160,7 +180,7 @@ class CodeAgentEngine:
                 "chunks_used": 0
             }
         except Exception as e:
-            logger.warning(f"Agent execution failed: {e}. Falling back to standard RAG.")
+            logger.warning("Agent execution failed: error_type=%s; falling back to standard RAG", type(e).__name__)
             return self.rag_engine.query(
                 question=question,
                 k=k,

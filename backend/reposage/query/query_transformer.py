@@ -92,9 +92,9 @@ class QueryTransformer:
             queries = queries[:5]
 
         except Exception as e:
-            logger.warning(f"Query expansion failed, using original: {e}")
+            logger.warning("Query expansion failed, using original: %s", type(e).__name__)
 
-        logger.info(f"Expanded '{question}' → {queries}")
+        logger.info("Query expansion completed: query_count=%d", len(queries))
         return queries
 
     def expand_and_retrieve(self, question: str, retriever, k_per_query: int = 4) -> list:
@@ -126,7 +126,7 @@ class QueryTransformer:
                         seen_content.add(content_key)
                         all_docs.append(doc)
             except Exception as e:
-                logger.warning(f"Retrieval failed for query '{q}': {e}")
+                logger.warning("Retrieval failed: %s", type(e).__name__)
 
         logger.info(
             f"Multi-query retrieval: {len(queries)} queries → "

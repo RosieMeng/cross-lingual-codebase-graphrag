@@ -1,0 +1,3506 @@
+{
+  "report_schema_version": "2.0.0",
+  "benchmark": {
+    "name": "cross_lingual_code_qa",
+    "version": "1.0.0",
+    "kind": "toy_smoke",
+    "validated_research_benchmark": false
+  },
+  "code_revision": {
+    "commit": "5ecc90ef1ff3768b9dfc01f373379e639595207f",
+    "tracked_worktree_dirty": true
+  },
+  "configuration": {
+    "query_embedding_model_id": "nomic-embed-text",
+    "indexed_embedding_model_id": "unknown_not_recorded_in_existing_index_metadata",
+    "chat_model_id": null,
+    "query_mode": "raw_query_only",
+    "query_expansion": false,
+    "k": 10,
+    "answer_generation": false,
+    "configuration_source": "explicit source defaults; .env and process environment not read"
+  },
+  "indexed_corpus": {
+    "repo_name": "micrograd",
+    "source_revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c",
+    "expected_source_revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c",
+    "source_revision_matches_expected": true,
+    "chunk_count": 15,
+    "files_processed": 6,
+    "artifact_sha256": {
+      "metadata.json": "5aa83cea89a6161b262b993535b8c4009d1e9a44f41384fd9ce7acef89c03cf0",
+      "bm25_docs.pkl": "6a67249e2e5fab933c32087aac33ccbc44dc1e97127e553120468761aa715546",
+      "graph.pkl": "ed9817b5fc99c9b302c86ed1a64d6c9bcf28594894a801d4affc00b77210155f",
+      "chroma.sqlite3": "ca2e889f266a0eed1ba4857c54ca6e7270c61469f3e2929e4825497bc4390ea8"
+    }
+  },
+  "retrieval_status": "complete",
+  "execution_counts": {
+    "success": 9,
+    "partial": 0,
+    "failed": 0
+  },
+  "coverage": {
+    "query_count": 9,
+    "covered": 6,
+    "unindexable": 3,
+    "unknown": 0,
+    "eligible_successful_queries": 6
+  },
+  "errors": [],
+  "metrics": {
+    "overall_micro_average": {
+      "query_count": 6,
+      "file_hit@1": 1.0,
+      "function_hit@1": 0.5,
+      "file_hit@3": 1.0,
+      "function_hit@3": 0.5,
+      "file_hit@5": 1.0,
+      "function_hit@5": 0.5,
+      "file_hit@10": 1.0,
+      "function_hit@10": 1.0,
+      "mrr": 0.5654761904761905
+    },
+    "language_macro_average": {
+      "file_hit@1": 1.0,
+      "function_hit@1": 0.5,
+      "file_hit@3": 1.0,
+      "function_hit@3": 0.5,
+      "file_hit@5": 1.0,
+      "function_hit@5": 0.5,
+      "file_hit@10": 1.0,
+      "function_hit@10": 1.0,
+      "mrr": 0.5654761904761905
+    },
+    "by_language": {
+      "en": {
+        "query_count": 2,
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.5,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.5,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.5,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.5625
+      },
+      "fr": {
+        "query_count": 2,
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.5,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.5,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.5,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.5625
+      },
+      "zh": {
+        "query_count": 2,
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.5,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.5,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.5,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.5714285714285714
+      }
+    }
+  },
+  "queries": [
+    {
+      "query_id": "autodiff-backward-en-v1",
+      "task_id": "autodiff-backward-v1",
+      "language": "en",
+      "query": "How does backward compute gradients and traverse the computation graph?",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "backward",
+        "line_start": 54
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__init__",
+          "type": "function",
+          "line_start": 5,
+          "line_end": 11
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class (Graph Context)",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class (Graph Context)",
+          "line_start": 30,
+          "line_end": 43
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class (Graph Context)",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class (Graph Context)",
+            "line_start": 30,
+            "line_end": 43
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:54",
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:5",
+        "README.md:1",
+        "test/test_engine.py:28",
+        "test/test_engine.py:4",
+        "micrograd/engine.py:45",
+        "micrograd/engine.py:24",
+        "micrograd/engine.py:13",
+        "micrograd/nn.py:45",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24",
+        "micrograd/nn.py:13",
+        "micrograd/nn.py:30"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 1.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 1.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 1.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 1.0
+      },
+      "latency_ms": 2186.948,
+      "errors": []
+    },
+    {
+      "query_id": "autodiff-backward-fr-v1",
+      "task_id": "autodiff-backward-v1",
+      "language": "fr",
+      "query": "Comment backward calcule-t-il les gradients et parcourt-il le graphe de calcul ?",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "backward",
+        "line_start": 54
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__init__",
+          "type": "function",
+          "line_start": 5,
+          "line_end": 11
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class (Graph Context)",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class (Graph Context)",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class (Graph Context)",
+          "line_start": 30,
+          "line_end": 43
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class (Graph Context)",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class (Graph Context)",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class (Graph Context)",
+            "line_start": 30,
+            "line_end": 43
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:54",
+        "README.md:1",
+        "micrograd/engine.py:45",
+        "test/test_engine.py:4",
+        "test/test_engine.py:28",
+        "micrograd/engine.py:24",
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:13",
+        "micrograd/nn.py:45",
+        "micrograd/engine.py:5",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24",
+        "micrograd/nn.py:30"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 1.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 1.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 1.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 1.0
+      },
+      "latency_ms": 126.414,
+      "errors": []
+    },
+    {
+      "query_id": "autodiff-backward-zh-v1",
+      "task_id": "autodiff-backward-v1",
+      "language": "zh",
+      "query": "backward 如何遍历计算图并计算梯度？",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "backward",
+        "line_start": 54
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "build_topo",
+          "type": "function",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__pow__",
+          "type": "function",
+          "line_start": 35,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class (Graph Context)",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class (Graph Context)",
+          "line_start": 30,
+          "line_end": 43
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class (Graph Context)",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class (Graph Context)",
+            "line_start": 30,
+            "line_end": 43
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:54",
+        "test/test_engine.py:4",
+        "test/test_engine.py:28",
+        "micrograd/engine.py:45",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:59",
+        "micrograd/engine.py:24",
+        "micrograd/engine.py:13",
+        "README.md:1",
+        "micrograd/engine.py:35",
+        "micrograd/engine.py:2",
+        "micrograd/nn.py:30"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 1.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 1.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 1.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 1.0
+      },
+      "latency_ms": 24.922,
+      "errors": []
+    },
+    {
+      "query_id": "mlp-forward-en-v1",
+      "task_id": "mlp-forward-v1",
+      "language": "en",
+      "query": "Where does the MLP pass each input through its layers?",
+      "gold": {
+        "file": "micrograd/nn.py",
+        "function": "__call__",
+        "line_start": 51
+      },
+      "index_coverage": {
+        "target_present": false,
+        "by_component": {
+          "vector": false,
+          "bm25": false
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__init__",
+          "type": "function",
+          "line_start": 5,
+          "line_end": 11
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/nn.py:45",
+        "README.md:1",
+        "micrograd/engine.py:54",
+        "micrograd/nn.py:30",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:5",
+        "test/test_engine.py:28",
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:24",
+        "test/test_engine.py:4",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24"
+      ],
+      "metrics": null,
+      "latency_ms": 25.924,
+      "errors": []
+    },
+    {
+      "query_id": "mlp-forward-fr-v1",
+      "task_id": "mlp-forward-v1",
+      "language": "fr",
+      "query": "Où le MLP fait-il passer chaque entrée à travers ses couches ?",
+      "gold": {
+        "file": "micrograd/nn.py",
+        "function": "__call__",
+        "line_start": 51
+      },
+      "index_coverage": {
+        "target_present": false,
+        "by_component": {
+          "vector": false,
+          "bm25": false
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "build_topo",
+          "type": "function",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__pow__",
+          "type": "function",
+          "line_start": 35,
+          "line_end": 43
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class (Graph Context)",
+          "line_start": 2,
+          "line_end": 94
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class (Graph Context)",
+            "line_start": 2,
+            "line_end": 94
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/nn.py:45",
+        "micrograd/nn.py:30",
+        "micrograd/engine.py:59",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:54",
+        "micrograd/engine.py:45",
+        "micrograd/engine.py:35",
+        "test/test_engine.py:28",
+        "micrograd/engine.py:24",
+        "test/test_engine.py:4",
+        "micrograd/engine.py:2"
+      ],
+      "metrics": null,
+      "latency_ms": 61.727,
+      "errors": []
+    },
+    {
+      "query_id": "mlp-forward-zh-v1",
+      "task_id": "mlp-forward-v1",
+      "language": "zh",
+      "query": "MLP 在哪里将每个输入依次传过各层？",
+      "gold": {
+        "file": "micrograd/nn.py",
+        "function": "__call__",
+        "line_start": 51
+      },
+      "index_coverage": {
+        "target_present": false,
+        "by_component": {
+          "vector": false,
+          "bm25": false
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "build_topo",
+          "type": "function",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__pow__",
+          "type": "function",
+          "line_start": 35,
+          "line_end": 43
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class (Graph Context)",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function (Graph Context)",
+          "line_start": 54,
+          "line_end": 70
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class (Graph Context)",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function (Graph Context)",
+            "line_start": 54,
+            "line_end": 70
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/nn.py:45",
+        "micrograd/nn.py:13",
+        "micrograd/nn.py:30",
+        "micrograd/engine.py:59",
+        "micrograd/engine.py:45",
+        "micrograd/engine.py:35",
+        "test/test_engine.py:28",
+        "micrograd/engine.py:24",
+        "test/test_engine.py:4",
+        "README.md:1",
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:54"
+      ],
+      "metrics": null,
+      "latency_ms": 57.62,
+      "errors": []
+    },
+    {
+      "query_id": "multiply-gradient-en-v1",
+      "task_id": "multiply-gradient-v1",
+      "language": "en",
+      "query": "How does Value multiplication propagate gradients to its operands?",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "__mul__",
+        "line_start": 24
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:2",
+        "micrograd/engine.py:54",
+        "test/test_engine.py:28",
+        "micrograd/nn.py:13",
+        "README.md:1",
+        "micrograd/nn.py:45",
+        "micrograd/nn.py:30",
+        "micrograd/engine.py:24",
+        "test/test_engine.py:4",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.125
+      },
+      "latency_ms": 26.542,
+      "errors": []
+    },
+    {
+      "query_id": "multiply-gradient-fr-v1",
+      "task_id": "multiply-gradient-v1",
+      "language": "fr",
+      "query": "Comment la multiplication de Value propage-t-elle les gradients à ses opérandes ?",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "__mul__",
+        "line_start": 24
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__init__",
+          "type": "function",
+          "line_start": 5,
+          "line_end": 11
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__init__",
+            "type": "function",
+            "line_start": 5,
+            "line_end": 11
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:2",
+        "test/test_engine.py:28",
+        "README.md:1",
+        "micrograd/nn.py:45",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:54",
+        "micrograd/nn.py:30",
+        "micrograd/engine.py:24",
+        "test/test_engine.py:4",
+        "micrograd/engine.py:5",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.125
+      },
+      "latency_ms": 48.662,
+      "errors": []
+    },
+    {
+      "query_id": "multiply-gradient-zh-v1",
+      "task_id": "multiply-gradient-v1",
+      "language": "zh",
+      "query": "Value 的乘法如何将梯度传回两个操作数？",
+      "gold": {
+        "file": "micrograd/engine.py",
+        "function": "__mul__",
+        "line_start": 24
+      },
+      "index_coverage": {
+        "target_present": true,
+        "by_component": {
+          "vector": true,
+          "bm25": true
+        }
+      },
+      "execution_status": "success",
+      "vector_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          }
+        ]
+      ],
+      "bm25_rankings": [
+        [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "build_topo",
+            "type": "function",
+            "line_start": 59,
+            "line_end": 64
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function",
+            "line_start": 54,
+            "line_end": 70
+          }
+        ]
+      ],
+      "ranked_results": [
+        {
+          "file": "micrograd/engine.py",
+          "function": "Value",
+          "type": "class",
+          "line_start": 2,
+          "line_end": 94
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "MLP",
+          "type": "class",
+          "line_start": 45,
+          "line_end": 60
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_sanity_check",
+          "type": "function",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "test/test_engine.py",
+          "function": "test_more_ops",
+          "type": "function",
+          "line_start": 28,
+          "line_end": 67
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Module",
+          "type": "class",
+          "line_start": 4,
+          "line_end": 11
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Neuron",
+          "type": "class",
+          "line_start": 13,
+          "line_end": 28
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "relu",
+          "type": "function",
+          "line_start": 45,
+          "line_end": 52
+        },
+        {
+          "file": "README.md",
+          "function": "README",
+          "type": "module",
+          "line_start": 1,
+          "line_end": 73
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__pow__",
+          "type": "function",
+          "line_start": 35,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__add__",
+          "type": "function (Graph Context)",
+          "line_start": 13,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "__mul__",
+          "type": "function (Graph Context)",
+          "line_start": 24,
+          "line_end": 33
+        },
+        {
+          "file": "micrograd/nn.py",
+          "function": "Layer",
+          "type": "class (Graph Context)",
+          "line_start": 30,
+          "line_end": 43
+        },
+        {
+          "file": "micrograd/engine.py",
+          "function": "backward",
+          "type": "function (Graph Context)",
+          "line_start": 54,
+          "line_end": 70
+        }
+      ],
+      "stages": {
+        "rrf": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "Value",
+            "type": "class",
+            "line_start": 2,
+            "line_end": 94
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "MLP",
+            "type": "class",
+            "line_start": 45,
+            "line_end": 60
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_sanity_check",
+            "type": "function",
+            "line_start": 4,
+            "line_end": 26
+          },
+          {
+            "file": "test/test_engine.py",
+            "function": "test_more_ops",
+            "type": "function",
+            "line_start": 28,
+            "line_end": 67
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Module",
+            "type": "class",
+            "line_start": 4,
+            "line_end": 11
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Neuron",
+            "type": "class",
+            "line_start": 13,
+            "line_end": 28
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "relu",
+            "type": "function",
+            "line_start": 45,
+            "line_end": 52
+          },
+          {
+            "file": "README.md",
+            "function": "README",
+            "type": "module",
+            "line_start": 1,
+            "line_end": 73
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__pow__",
+            "type": "function",
+            "line_start": 35,
+            "line_end": 43
+          }
+        ],
+        "graph_enrichment": [
+          {
+            "file": "micrograd/engine.py",
+            "function": "__add__",
+            "type": "function (Graph Context)",
+            "line_start": 13,
+            "line_end": 22
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "__mul__",
+            "type": "function (Graph Context)",
+            "line_start": 24,
+            "line_end": 33
+          },
+          {
+            "file": "micrograd/nn.py",
+            "function": "Layer",
+            "type": "class (Graph Context)",
+            "line_start": 30,
+            "line_end": 43
+          },
+          {
+            "file": "micrograd/engine.py",
+            "function": "backward",
+            "type": "function (Graph Context)",
+            "line_start": 54,
+            "line_end": 70
+          }
+        ]
+      },
+      "sources": [
+        "micrograd/engine.py:2",
+        "micrograd/nn.py:45",
+        "test/test_engine.py:4",
+        "test/test_engine.py:28",
+        "micrograd/nn.py:4",
+        "micrograd/nn.py:13",
+        "micrograd/engine.py:24",
+        "micrograd/engine.py:45",
+        "README.md:1",
+        "micrograd/engine.py:35",
+        "micrograd/engine.py:13",
+        "micrograd/engine.py:24",
+        "micrograd/nn.py:30",
+        "micrograd/engine.py:54"
+      ],
+      "metrics": {
+        "file_hit@1": 1.0,
+        "function_hit@1": 0.0,
+        "file_hit@3": 1.0,
+        "function_hit@3": 0.0,
+        "file_hit@5": 1.0,
+        "function_hit@5": 0.0,
+        "file_hit@10": 1.0,
+        "function_hit@10": 1.0,
+        "mrr": 0.14285714285714285
+      },
+      "latency_ms": 48.985,
+      "errors": []
+    }
+  ]
+}

@@ -271,3 +271,116 @@ class TestHybridSearchRRF:
         assert fused[0].page_content == "docA"
         assert fused[1].page_content == "docC"
         assert fused[2].page_content == "docB"
+
+
+def _document(file, name, line_start, content=None, chunk_type="function"):
+    return MockDocument(
+        page_content=content or f"def {name}(): pass",
+        metadata={
+            "file": file,
+            "name": name,
+            "line_start": line_start,
+            "line_end": line_start + 2,
+            "type": chunk_type,
+            "language": "python",
+        },
+    )
+
+
+class _RawQueryTransformer:
+    def expand_query(self, query):
+        return [query]
+
+
+class _StaticRetriever:
+    def __init__(self, docs):
+        self.docs = docs
+        self.queries = []
+
+    def invoke(self, query):
+        self.queries.append(query)
+        return list(self.docs)
+
+
+class _StaticVectorStore:
+    def __init__(self, retriever):
+        self.retriever = retriever
+        self.search_kwargs = None
+
+    def as_retriever(self, search_kwargs):
+        self.search_kwargs = search_kwargs
+        return self.retriever
+
+
+def _retrieval_engine(vector_docs, bm25_docs, graph=None):
+    from reposage.query.rag_engine import CodeRAGEngine
+
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    engine.query_transformer = _RawQueryTransformer()
+    engine.vectorstore = _StaticVectorStore(_StaticRetriever(vector_docs))
+    engine.bm25_retriever = _StaticRetriever(bm25_docs)
+    engine.graph = graph
+    return engine
+
+
+def test_retrieval_uses_original_query_for_vector_and_bm25_and_preserves_rrf_order():
+    vector_a = _document("src/a.py", "alpha", 1, "vector alpha")
+    vector_b = _document("src/b.py", "beta", 8, "vector beta")
+    bm25_a = _document("src/a.py", "alpha", 1, "vector alpha")
+    engine = _retrieval_engine([vector_a, vector_b], [bm25_a])
+    question = "Où est alpha? keepExactName"
+
+    docs, sources = engine._retrieve_and_fuse(question, 2)
+
+    assert engine.vectorstore.retriever.queries == [question]
+    assert engine.bm25_retriever.queries == [question]
+    assert engine.vectorstore.search_kwargs == {"k": 2}
+    assert [doc.metadata["name"] for doc in docs] == ["alpha", "beta"]
+    assert sources == ["src/a.py:1", "src/b.py:8"]
+
+
+def test_format_context_uses_retrieved_citation_metadata():
+    from reposage.query.rag_engine import CodeRAGEngine
+
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    context = engine._format_context([
+        _document("micrograd/engine.py", "backward", 52, "def backward(): pass")
+    ])
+
+    assert "micrograd/engine.py:52 (function: backward)" in context
+    assert "```python" in context
+    assert "def backward(): pass" in context
+
+
+def test_retrieval_adds_call_graph_neighbors_after_rrf():
+    import networkx as nx
+
+    seed = _document("micrograd/engine.py", "backward", 52, "def backward(): pass")
+    neighbor = _document("micrograd/engine.py", "build_topo", 43, "def build_topo(): pass")
+    graph = nx.DiGraph()
+    graph.add_edge("backward", "build_topo", type="calls")
+    engine = _retrieval_engine([seed], [seed, neighbor], graph)
+
+    docs, sources = engine._retrieve_and_fuse("gradient", 1)
+
+    assert [doc.metadata["name"] for doc in docs] == ["backward", "build_topo"]
+    assert docs[1].metadata["type"] == "function (Graph Context)"
+    assert sources == ["micrograd/engine.py:52", "micrograd/engine.py:43"]
+
+
+def test_graph_enrichment_does_not_contaminate_later_query():
+    import networkx as nx
+    seed = _document("a.py", "seed", 1)
+    neighbor = _document("b.py", "neighbor", 5)
+    graph = nx.DiGraph()
+    graph.add_edge("seed", "neighbor")
+    engine = _retrieval_engine([seed], [seed, neighbor], graph)
+    stages = []
+    first, _ = engine._retrieve_and_fuse("first", 1, lambda stage, docs: stages.append((stage, list(docs))))
+    assert first[1].metadata["type"] == "function (Graph Context)"
+    assert neighbor.metadata["type"] == "function"
+    engine.vectorstore.retriever.docs = [neighbor]
+    engine.bm25_retriever.docs = [neighbor]
+    second, _ = engine._retrieve_and_fuse("second", 1)
+    assert second[0].metadata["type"] == "function"
+    assert [stage for stage, _ in stages] == ["rrf", "graph_enrichment"]

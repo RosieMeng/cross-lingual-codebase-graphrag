@@ -23,13 +23,14 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from reposage.ingestion.repo_indexer import RepoIndexer
 from reposage.query.rag_engine import CodeRAGEngine
 from reposage.query.agent_engine import CodeAgentEngine
 from reposage.query.query_transformer import QueryTransformer
 from reposage.analysis.repo_summarizer import RepoSummarizer
+from reposage.security import validate_repo_name
 
 # ─── Logging ───
 logging.basicConfig(
@@ -135,6 +136,11 @@ class QueryRequest(BaseModel):
         description="Previous conversation messages for context",
     )
 
+    @field_validator("repo_name")
+    @classmethod
+    def validate_repository_name(cls, value: str) -> str:
+        return validate_repo_name(value)
+
 
 class IndexResponse(BaseModel):
     repo: str
@@ -180,6 +186,10 @@ def index_repository(request: IndexRequest):
     repo_name = request.github_url.rstrip("/").split("/")[-1]
     if repo_name.endswith(".git"):
         repo_name = repo_name[:-4]
+    try:
+        validate_repo_name(repo_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     # Update status
     indexing_status[repo_name] = {"status": "indexing", "progress": "Cloning repository..."}
@@ -201,6 +211,10 @@ def index_repository(request: IndexRequest):
 @app.get("/index/status/{repo_name}", tags=["Indexing"])
 def get_index_status(repo_name: str):
     """Check the indexing status of a repository."""
+    try:
+        validate_repo_name(repo_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if repo_name not in indexing_status:
         raise HTTPException(status_code=404, detail="No indexing task found for this repo")
     return indexing_status[repo_name]
@@ -319,6 +333,11 @@ def get_repo_summary(repo_name: str, refresh: bool = False):
     Returns tech stack, architecture overview, key modules,
     and entry points.
     """
+    try:
+        validate_repo_name(repo_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     if refresh:
         cache_path = os.path.join(CHROMA_PERSIST_DIR, repo_name, "summary_cache.json")
         if os.path.exists(cache_path):
@@ -337,6 +356,10 @@ def get_repo_summary(repo_name: str, refresh: bool = False):
 @app.delete("/repos/{repo_name}", tags=["Repositories"])
 def delete_repository(repo_name: str):
     """Delete an indexed repository's embeddings."""
+    try:
+        validate_repo_name(repo_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     deleted = indexer.delete_repo(repo_name)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Repository '{repo_name}' not found.")
