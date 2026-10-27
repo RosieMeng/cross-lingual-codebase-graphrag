@@ -37,7 +37,9 @@ def evidence_from_docs(docs, repo_name=None):
 
 
 _CITATION = re.compile(r"(?<![\w/])([\w./\\-]+\.[\w]+):(\d+)(?:-(\d+))?", re.UNICODE)
-_SOURCE_MARKER = re.compile(r"\[S[^\]\n]*\]", re.IGNORECASE)
+# Recognize source-ID-shaped brackets without treating ordinary Markdown
+# labels such as [See] or [Sources] as fabricated citations.
+_SOURCE_MARKER = re.compile(r"\[S(?:\d[^\]\n]*|[^\s\]]?)\]", re.IGNORECASE)
 
 
 def audit_citations(answer, evidence):

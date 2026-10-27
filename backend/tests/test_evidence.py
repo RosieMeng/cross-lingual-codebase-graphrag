@@ -24,6 +24,8 @@ def test_citation_audit_checks_lines_and_unknown_references():
     assert audit_citations("See [S1] and src/a.py:4-6.", evidence)["status"] == "matched"
     assert audit_citations("See [S4], src/a.py:8 and other.py:4.", evidence)["unsupported"] == ["[S4]", "src/a.py:8", "other.py:4"]
     assert audit_citations("See [S01]", evidence)["status"] == "unsupported"
+    assert audit_citations("See [Sx]", evidence)["status"] == "unsupported"
+    assert audit_citations("[Sources] and [See] are ordinary labels.", evidence)["status"] == "not_detected"
     assert audit_citations("See src/a.py:4.", evidence)["status"] == "not_detected"
     assert audit_citations("No citation", evidence)["status"] == "not_detected"
 

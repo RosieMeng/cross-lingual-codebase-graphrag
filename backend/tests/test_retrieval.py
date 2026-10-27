@@ -272,6 +272,25 @@ class TestHybridSearchRRF:
         assert fused[1].page_content == "docC"
         assert fused[2].page_content == "docB"
 
+    def test_identical_content_in_distinct_files_does_not_merge_or_reassign_sources(self):
+        from reposage.query.rag_engine import CodeRAGEngine
+        engine = CodeRAGEngine.__new__(CodeRAGEngine)
+        engine.repo_name = "sample"
+        first = MockDocument(page_content="def run(): pass", metadata={"repo": "sample", "file": "a.py", "line_start": 1, "line_end": 1})
+        second = MockDocument(page_content="def run(): pass", metadata={"repo": "sample", "file": "b.py", "line_start": 8, "line_end": 8})
+        copy_of_first = MockDocument(page_content=first.page_content, metadata=dict(first.metadata))
+        fused = engine._reciprocal_rank_fusion([first, second], [copy_of_first])
+        assert [d.metadata["file"] for d in fused] == ["a.py", "b.py"]
+
+
+def test_retrieval_deduplicates_by_chunk_identity_not_content():
+    a = _document("a.py", "same", 1, "identical")
+    b = _document("b.py", "same", 9, "identical")
+    engine = _retrieval_engine([a, b], [a])
+    docs, sources = engine._retrieve_and_fuse("same", 2)
+    assert [d.metadata["file"] for d in docs] == ["a.py", "b.py"]
+    assert sources == ["a.py:1", "b.py:9"]
+
 
 def _document(file, name, line_start, content=None, chunk_type="function"):
     return MockDocument(
