@@ -1,0 +1,1374 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_id": "m3_1_review_candidates",
+  "annotation_status": "unverified",
+  "repositories": [
+    {
+      "repo_id": "micrograd",
+      "revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c",
+      "source": "local micrograd checkout",
+      "split": "unassigned"
+    },
+    {
+      "repo_id": "reposage",
+      "revision": "f26e2ec824bd8d41f673a547e388b82c4ccdaf6a",
+      "source": "RepoSage repository test fixtures",
+      "split": "unassigned"
+    }
+  ],
+  "indexes": [],
+  "tasks": [
+    {
+      "task_id": "backward",
+      "repo_id": "micrograd",
+      "intent": "Find the reverse traversal and gradient propagation",
+      "evidence": [
+        {
+          "evidence_id": "backward-0",
+          "file": "micrograd/engine.py",
+          "symbol": "Value.backward",
+          "line_start": 54,
+          "line_end": 70,
+          "role": "answer",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        },
+        {
+          "evidence_id": "backward-1",
+          "file": "micrograd/engine.py",
+          "symbol": "Value",
+          "line_start": 2,
+          "line_end": 94,
+          "role": "context",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        }
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "task_id": "mlp_forward",
+      "repo_id": "micrograd",
+      "intent": "Find how the MLP sends an input through layers",
+      "evidence": [
+        {
+          "evidence_id": "mlp_forward-0",
+          "file": "micrograd/nn.py",
+          "symbol": "MLP.__call__",
+          "line_start": 51,
+          "line_end": 54,
+          "role": "answer",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        },
+        {
+          "evidence_id": "mlp_forward-1",
+          "file": "micrograd/nn.py",
+          "symbol": "MLP",
+          "line_start": 45,
+          "line_end": 60,
+          "role": "context",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        }
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "task_id": "auth",
+      "repo_id": "reposage",
+      "intent": "Find credential lookup and password verification",
+      "evidence": [
+        {
+          "evidence_id": "auth-0",
+          "file": "backend/tests/fixtures/sample_repo/auth.py",
+          "symbol": "authenticate_user",
+          "line_start": 7,
+          "line_end": 32,
+          "role": "answer",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        },
+        {
+          "evidence_id": "auth-1",
+          "file": "backend/tests/fixtures/sample_repo/auth.py",
+          "symbol": "get_user_from_db",
+          "line_start": 35,
+          "line_end": 38,
+          "role": "context",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        }
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "task_id": "pagination",
+      "repo_id": "reposage",
+      "intent": "Find pagination bounds and returned metadata",
+      "evidence": [
+        {
+          "evidence_id": "pagination-0",
+          "file": "backend/tests/fixtures/sample_repo/utils.py",
+          "symbol": "paginate",
+          "line_start": 21,
+          "line_end": 47,
+          "role": "answer",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        }
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "task_id": "relu",
+      "repo_id": "micrograd",
+      "intent": "Find the rectified activation and its gradient",
+      "evidence": [
+        {
+          "evidence_id": "relu-0",
+          "file": "micrograd/engine.py",
+          "symbol": "Value.relu",
+          "line_start": 45,
+          "line_end": 52,
+          "role": "answer",
+          "review": {
+            "status": "unverified",
+            "reviewers": [],
+            "decisions": []
+          },
+          "coverage": {
+            "status": "not_checked",
+            "index_manifest": null,
+            "matching_chunks": []
+          }
+        }
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    }
+  ],
+  "queries": [
+    {
+      "query_id": "backward-en",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "en",
+      "identifier_presence": "present",
+      "text": "How does Value.backward traverse the graph and propagate gradients?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 23,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 24,
+          "end": 67,
+          "text": "traverse the graph and propagate gradients?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-fr",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "fr",
+      "identifier_presence": "present",
+      "text": "Comment Value.backward parcourt-il le graphe et propage-t-il les gradients ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 22,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 23,
+          "end": 76,
+          "text": "parcourt-il le graphe et propage-t-il les gradients ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-zh",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "zh",
+      "identifier_presence": "present",
+      "text": "Value.backward 如何遍历计算图并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 14,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 15,
+          "end": 28,
+          "text": "如何遍历计算图并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-en-fr",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "en-fr",
+      "identifier_presence": "present",
+      "text": "How does Value.backward parcourir le graphe et calculer les gradients ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 23,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 24,
+          "end": 71,
+          "text": "parcourir le graphe et calculer les gradients ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-en-zh",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "en-zh",
+      "identifier_presence": "present",
+      "text": "How does Value.backward 遍历计算图并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 23,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 24,
+          "end": 35,
+          "text": "遍历计算图并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-fr-zh",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "fr-zh",
+      "identifier_presence": "present",
+      "text": "Comment Value.backward 遍历计算图并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 22,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 23,
+          "end": 34,
+          "text": "遍历计算图并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "backward-en-fr-zh",
+      "task_id": "backward",
+      "pair_id": "backward",
+      "category": "en-fr-zh",
+      "identifier_presence": "present",
+      "text": "How does Value.backward propager les gradients 并遍历计算图？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 23,
+          "text": "Value.backward",
+          "label": "code"
+        },
+        {
+          "start": 24,
+          "end": 46,
+          "text": "propager les gradients",
+          "label": "fr"
+        },
+        {
+          "start": 47,
+          "end": 54,
+          "text": "并遍历计算图？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "Value.backward"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-en",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "en",
+      "identifier_presence": "present",
+      "text": "How does MLP.__call__ pass an input through the layers?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 21,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 22,
+          "end": 55,
+          "text": "pass an input through the layers?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-fr",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "fr",
+      "identifier_presence": "present",
+      "text": "Comment MLP.__call__ fait-il passer une entrée dans les couches ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 20,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 21,
+          "end": 65,
+          "text": "fait-il passer une entrée dans les couches ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-zh",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "zh",
+      "identifier_presence": "present",
+      "text": "MLP.__call__ 如何让输入依次经过各层？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 12,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 13,
+          "end": 25,
+          "text": "如何让输入依次经过各层？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-en-fr",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "en-fr",
+      "identifier_presence": "present",
+      "text": "How does MLP.__call__ faire passer une entrée dans les couches ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 21,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 22,
+          "end": 64,
+          "text": "faire passer une entrée dans les couches ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-en-zh",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "en-zh",
+      "identifier_presence": "present",
+      "text": "How does MLP.__call__ 让输入依次经过各层？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 21,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 22,
+          "end": 32,
+          "text": "让输入依次经过各层？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-fr-zh",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "fr-zh",
+      "identifier_presence": "present",
+      "text": "Comment MLP.__call__ 让输入依次经过各层？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 20,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 21,
+          "end": 31,
+          "text": "让输入依次经过各层？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-en-fr-zh",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward",
+      "category": "en-fr-zh",
+      "identifier_presence": "present",
+      "text": "How does MLP.__call__ traiter une entrée 并依次经过各层？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 21,
+          "text": "MLP.__call__",
+          "label": "code"
+        },
+        {
+          "start": 22,
+          "end": 40,
+          "text": "traiter une entrée",
+          "label": "fr"
+        },
+        {
+          "start": 41,
+          "end": 49,
+          "text": "并依次经过各层？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "MLP.__call__"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-en",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "en",
+      "identifier_presence": "present",
+      "text": "How does authenticate_user look up a user and verify the password?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 26,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 27,
+          "end": 66,
+          "text": "look up a user and verify the password?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-fr",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "fr",
+      "identifier_presence": "present",
+      "text": "Comment authenticate_user cherche-t-il un utilisateur et vérifie-t-il son mot de passe ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 25,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 26,
+          "end": 88,
+          "text": "cherche-t-il un utilisateur et vérifie-t-il son mot de passe ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-zh",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "zh",
+      "identifier_presence": "present",
+      "text": "authenticate_user 如何查找用户并验证密码？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 17,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 18,
+          "end": 30,
+          "text": "如何查找用户并验证密码？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-en-fr",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "en-fr",
+      "identifier_presence": "present",
+      "text": "How does authenticate_user chercher un utilisateur et vérifier son mot de passe ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 26,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 27,
+          "end": 81,
+          "text": "chercher un utilisateur et vérifier son mot de passe ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-en-zh",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "en-zh",
+      "identifier_presence": "present",
+      "text": "How does authenticate_user 查找用户并验证密码？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 26,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 27,
+          "end": 37,
+          "text": "查找用户并验证密码？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-fr-zh",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "fr-zh",
+      "identifier_presence": "present",
+      "text": "Comment authenticate_user 查找用户并验证密码？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 7,
+          "text": "Comment",
+          "label": "fr"
+        },
+        {
+          "start": 8,
+          "end": 25,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 26,
+          "end": 36,
+          "text": "查找用户并验证密码？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "auth-en-fr-zh",
+      "task_id": "auth",
+      "pair_id": "auth",
+      "category": "en-fr-zh",
+      "identifier_presence": "present",
+      "text": "How does authenticate_user chercher l'utilisateur 并验证密码？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 8,
+          "text": "How does",
+          "label": "en"
+        },
+        {
+          "start": 9,
+          "end": 26,
+          "text": "authenticate_user",
+          "label": "code"
+        },
+        {
+          "start": 27,
+          "end": 49,
+          "text": "chercher l'utilisateur",
+          "label": "fr"
+        },
+        {
+          "start": 50,
+          "end": 56,
+          "text": "并验证密码？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [
+        "authenticate_user"
+      ],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-en",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "en",
+      "identifier_presence": "absent",
+      "text": "Where are page boundaries calculated and page metadata returned?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 64,
+          "text": "Where are page boundaries calculated and page metadata returned?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-fr",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "fr",
+      "identifier_presence": "absent",
+      "text": "Où sont calculées les limites d'une page et renvoyées les métadonnées ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 71,
+          "text": "Où sont calculées les limites d'une page et renvoyées les métadonnées ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-zh",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "zh",
+      "identifier_presence": "absent",
+      "text": "在哪里计算分页边界并返回分页信息？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 17,
+          "text": "在哪里计算分页边界并返回分页信息？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-en-fr",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "en-fr",
+      "identifier_presence": "absent",
+      "text": "Where are page boundaries calculated et les métadonnées renvoyées ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 36,
+          "text": "Where are page boundaries calculated",
+          "label": "en"
+        },
+        {
+          "start": 37,
+          "end": 67,
+          "text": "et les métadonnées renvoyées ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-en-zh",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "en-zh",
+      "identifier_presence": "absent",
+      "text": "Where are page boundaries calculated 并返回分页信息？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 36,
+          "text": "Where are page boundaries calculated",
+          "label": "en"
+        },
+        {
+          "start": 37,
+          "end": 45,
+          "text": "并返回分页信息？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-fr-zh",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "fr-zh",
+      "identifier_presence": "absent",
+      "text": "Où sont calculées les limites d'une page 并返回分页信息？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 40,
+          "text": "Où sont calculées les limites d'une page",
+          "label": "fr"
+        },
+        {
+          "start": 41,
+          "end": 49,
+          "text": "并返回分页信息？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "pagination-en-fr-zh",
+      "task_id": "pagination",
+      "pair_id": "pagination",
+      "category": "en-fr-zh",
+      "identifier_presence": "absent",
+      "text": "Where are page boundaries calculated et les métadonnées 在哪里返回？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 36,
+          "text": "Where are page boundaries calculated",
+          "label": "en"
+        },
+        {
+          "start": 37,
+          "end": 55,
+          "text": "et les métadonnées",
+          "label": "fr"
+        },
+        {
+          "start": 56,
+          "end": 62,
+          "text": "在哪里返回？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-en",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "en",
+      "identifier_presence": "absent",
+      "text": "Where is the rectified activation computed and its gradient propagated?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 71,
+          "text": "Where is the rectified activation computed and its gradient propagated?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-fr",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "fr",
+      "identifier_presence": "absent",
+      "text": "Où sont calculées l'activation rectifiée et sa dérivée ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 56,
+          "text": "Où sont calculées l'activation rectifiée et sa dérivée ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-zh",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "zh",
+      "identifier_presence": "absent",
+      "text": "在哪里计算修正线性激活及其梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "在哪里计算修正线性激活及其梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-en-fr",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "en-fr",
+      "identifier_presence": "absent",
+      "text": "Where is the rectified activation computed et sa dérivée propagée ?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 42,
+          "text": "Where is the rectified activation computed",
+          "label": "en"
+        },
+        {
+          "start": 43,
+          "end": 67,
+          "text": "et sa dérivée propagée ?",
+          "label": "fr"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-en-zh",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "en-zh",
+      "identifier_presence": "absent",
+      "text": "Where is the rectified activation computed 并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 42,
+          "text": "Where is the rectified activation computed",
+          "label": "en"
+        },
+        {
+          "start": 43,
+          "end": 49,
+          "text": "并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-fr-zh",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "fr-zh",
+      "identifier_presence": "absent",
+      "text": "Où est calculée l'activation rectifiée 并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 38,
+          "text": "Où est calculée l'activation rectifiée",
+          "label": "fr"
+        },
+        {
+          "start": 39,
+          "end": 45,
+          "text": "并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "relu-en-fr-zh",
+      "task_id": "relu",
+      "pair_id": "relu",
+      "category": "en-fr-zh",
+      "identifier_presence": "absent",
+      "text": "Where is the rectified activation calculée 并传播梯度？",
+      "spans": [
+        {
+          "start": 0,
+          "end": 33,
+          "text": "Where is the rectified activation",
+          "label": "en"
+        },
+        {
+          "start": 34,
+          "end": 42,
+          "text": "calculée",
+          "label": "fr"
+        },
+        {
+          "start": 43,
+          "end": 49,
+          "text": "并传播梯度？",
+          "label": "zh"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    },
+    {
+      "query_id": "mlp_forward-ambiguous-en",
+      "task_id": "mlp_forward",
+      "pair_id": "mlp_forward-ambiguous",
+      "category": "en",
+      "identifier_presence": "ambiguous",
+      "text": "Where does call send the input through the layers?",
+      "spans": [
+        {
+          "start": 0,
+          "end": 50,
+          "text": "Where does call send the input through the layers?",
+          "label": "en"
+        }
+      ],
+      "exact_symbols": [],
+      "review": {
+        "status": "unverified",
+        "reviewers": [],
+        "decisions": []
+      }
+    }
+  ]
+}

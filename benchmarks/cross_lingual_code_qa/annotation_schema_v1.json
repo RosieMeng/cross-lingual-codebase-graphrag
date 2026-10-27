@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reposage.local/schemas/retrieval-annotations-v1.json",
+  "title": "RepoSage retrieval annotations v1",
+  "description": "Candidate or reviewed annotations. Cross-record, offset, revision and index invariants require separate validation.",
+  "type": "object",
+  "required": ["schema_version", "dataset_id", "annotation_status", "repositories", "indexes", "tasks", "queries"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "annotation_status": {"enum": ["unverified", "mixed_review", "independently_reviewed"]},
+    "repositories": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/repository"}},
+    "indexes": {"type": "array", "items": {"$ref": "#/$defs/index"}},
+    "tasks": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/task"}},
+    "queries": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/query"}}
+  },
+  "$defs": {
+    "review": {
+      "type": "object", "required": ["status", "reviewers", "decisions"],
+      "properties": {"status": {"enum": ["unverified", "accepted", "rejected", "needs_adjudication"]},
+        "reviewers": {"type": "array", "items": {"type": "string"}},
+        "adjudication": {"type": "object", "required": ["reviewer", "timestamp", "reason"],
+          "properties": {"reviewer": {"type": "string"}, "timestamp": {"type": "string", "format": "date-time"}, "reason": {"type": "string"}}},
+        "decisions": {"type": "array", "items": {"type": "object", "required": ["reviewer", "decision", "timestamp", "reason"],
+          "properties": {"reviewer": {"type": "string"}, "decision": {"enum": ["accept", "reject", "revise"]},
+            "timestamp": {"type": "string", "format": "date-time"}, "reason": {"type": "string"}}}}}
+    },
+    "repository": {
+      "type": "object", "required": ["repo_id", "revision", "source", "split"],
+      "properties": {"repo_id": {"type": "string"}, "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source": {"type": "string"}, "split": {"enum": ["unassigned", "development", "test"]}}
+    },
+    "index": {"type": "object", "required": ["index_id", "repo_id", "revision", "artifact_sha256", "embedding_model"],
+      "properties": {"index_id": {"type": "string"}, "repo_id": {"type": "string"},
+        "revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "artifact_sha256": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+        "embedding_model": {"type": ["string", "null"]}}},
+    "evidence": {
+      "type": "object", "required": ["evidence_id", "file", "symbol", "line_start", "line_end", "role", "review", "coverage"],
+      "properties": {"evidence_id": {"type": "string"}, "file": {"type": "string"}, "symbol": {"type": "string"},
+        "line_start": {"type": "integer", "minimum": 1}, "line_end": {"type": "integer", "minimum": 1},
+        "role": {"enum": ["answer", "context"]}, "review": {"$ref": "#/$defs/review"},
+        "coverage": {"type": "object", "required": ["status", "index_manifest", "matching_chunks"],
+          "properties": {"status": {"enum": ["not_checked", "present", "absent", "unknown"]},
+            "index_manifest": {"type": ["string", "null"]}, "matching_chunks": {"type": "array", "items": {"type": "object"}}}}}
+    },
+    "task": {"type": "object", "required": ["task_id", "repo_id", "intent", "evidence", "review"],
+      "properties": {"task_id": {"type": "string"}, "repo_id": {"type": "string"}, "intent": {"type": "string"},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence"}}, "review": {"$ref": "#/$defs/review"}}},
+    "span": {"type": "object", "required": ["start", "end", "text", "label"],
+      "properties": {"start": {"type": "integer", "minimum": 0}, "end": {"type": "integer", "minimum": 1},
+        "text": {"type": "string"}, "label": {"enum": ["en", "fr", "zh", "und", "code"]}}},
+    "query": {"type": "object", "required": ["query_id", "task_id", "pair_id", "category", "identifier_presence", "text", "spans", "exact_symbols", "review"],
+      "properties": {"query_id": {"type": "string"}, "task_id": {"type": "string"}, "pair_id": {"type": "string"},
+        "category": {"enum": ["en", "fr", "zh", "en-fr", "en-zh", "fr-zh", "en-fr-zh"]},
+        "identifier_presence": {"enum": ["present", "absent", "ambiguous"]}, "text": {"type": "string", "minLength": 1},
+        "spans": {"type": "array", "items": {"$ref": "#/$defs/span"}},
+        "exact_symbols": {"type": "array", "items": {"type": "string"}}, "review": {"$ref": "#/$defs/review"}}}
+  }
+}
