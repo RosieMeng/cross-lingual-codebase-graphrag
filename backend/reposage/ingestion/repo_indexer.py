@@ -26,6 +26,7 @@ from ..chunkers.generic_chunker import GenericChunker
 from ..security import validate_repo_name
 import pickle
 from .docstring_gen import DocstringGenerator
+from .source_graph import build_source_graph, write_graph
 
 logger = logging.getLogger(__name__)
 
@@ -294,6 +295,18 @@ class RepoIndexer:
             logger.warning("networkx not installed, skipping GraphRAG build")
         except Exception as e:
             logger.error(f"Failed to save Knowledge Graph: {e}")
+
+        # New indexes also receive a qualified graph. Existing graph.pkl and
+        # index data are never migrated as a side effect of serving queries.
+        try:
+            qualified = build_source_graph(tmp_path, all_chunks, repo_name)
+            if qualified["nodes"]:
+                write_graph(qualified, os.path.join(collection_dir, "source_graph_v2.json"))
+                logger.info("Saved qualified source graph with %d nodes", len(qualified["nodes"]))
+            else:
+                logger.info("No Python symbols found; retaining legacy graph")
+        except Exception as e:
+            logger.warning("Qualified source graph build failed: %s", type(e).__name__)
 
         # Keep remote clones so the agent's read_file tool can read original files.
         # They will be cleaned up in delete_repo.

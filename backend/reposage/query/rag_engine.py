@@ -29,6 +29,7 @@ from .query_transformer import QueryTransformer
 from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter, detect_language
 from .code_aware_query import CodeAwareQueryPlanner
 from .evidence import evidence_from_docs, audit_citations, chunk_identity
+from .source_graph import enrich as enrich_source_graph, load_graph as load_source_graph
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +168,22 @@ class CodeRAGEngine:
             except Exception as e:
                 logger.error("Failed to load Knowledge Graph: %s", type(e).__name__)
 
+        # Existing graph.pkl remains compatible. A separately generated v2
+        # sidecar takes precedence when present, without migrating the index.
+        self.source_graph = None
+        graph_dir = os.getenv("REPOSAGE_SOURCE_GRAPH_DIR")
+        source_graph_path = (os.path.join(graph_dir, f"{repo_name}.json") if graph_dir
+                             else os.path.join(collection_dir, "source_graph_v2.json"))
+        self.disable_legacy_graph = bool(graph_dir) or os.path.isfile(source_graph_path)
+        if os.path.isfile(source_graph_path):
+            try:
+                self.source_graph = load_source_graph(source_graph_path, repo_name)
+                logger.info("Loaded qualified source graph")
+            except (OSError, ValueError, TypeError, KeyError):
+                logger.warning("Qualified source graph unavailable or invalid")
+        elif graph_dir:
+            logger.warning("Configured qualified source graph not found")
+
 
     def _format_context(self, docs) -> str:
         """Format code chunks with clear file:line attribution.
@@ -197,6 +214,9 @@ class CodeRAGEngine:
 
             label = evidence[identity]["citation_id"]
             header = f"### [{label}] {file_path}:{line_start} ({chunk_type}: {name})"
+            line_end = evidence[identity]["line_end"]
+            if line_end is not None:
+                header += f" [lines {line_start}-{line_end}]"
             code_fence = f"```{language}\n{doc.page_content}\n```"
             parts.append(f"{header}\n{code_fence}")
 
@@ -329,7 +349,20 @@ class CodeRAGEngine:
             stage_observer("rrf", docs)
 
         # GraphRAG Context Enrichment
-        if self.graph and self.bm25_retriever:
+        source_graph = getattr(self, "source_graph", None)
+        if source_graph and self.bm25_retriever:
+            try:
+                graph_context_docs = enrich_source_graph(source_graph, docs, self.bm25_retriever.docs,
+                                                         getattr(self, "repo_name", None),
+                                                         question if original_question is None else original_question)
+                if stage_observer:
+                    stage_observer("graph_enrichment", graph_context_docs)
+                docs.extend(graph_context_docs)
+            except Exception as e:
+                logger.warning("Qualified graph traversal failed: %s", type(e).__name__)
+                if stage_observer:
+                    stage_observer("error", {"stage": "graph_enrichment", "error_type": type(e).__name__})
+        elif self.graph and self.bm25_retriever and not getattr(self, "disable_legacy_graph", False):
             doc_lookup = {d.metadata.get("name"): d for d in self.bm25_retriever.docs if d.metadata.get("name")}
             graph_context_docs = []
             graph_originals = []
