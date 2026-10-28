@@ -1,0 +1,9 @@
+# Attribution and licensing
+
+This project is an extended and substantially modified derivative of [Ganesh-403/Repo-Sage](https://github.com/Ganesh-403/Repo-Sage). Credit for the inherited Repo-Sage application and architecture belongs to its original authors and contributors. The upstream README explicitly states that Repo-Sage is MIT licensed and links to a license file; that file and an upstream copyright notice were absent from the inspected upstream tree. The original holder's name and copyright year have not been independently established, and are not invented here.
+
+The inherited system includes the application architecture, repository ingestion and code chunking, RAG/Agent foundations and frontend. This project's original modifications include multilingual retrieval planning and evaluation, qualified source graphs, exact symbol grounding, structured source evidence, evidence-first caller/callee answers, regression tests and documentation. Some files contain both inherited and new work; attribution cannot be determined solely from file paths.
+
+The root [LICENSE](LICENSE) provides the MIT terms for RosieMeng's original contributions, to the extent RosieMeng holds the rights to license them. It is not a claim that RosieMeng owns the inherited Repo-Sage code or third-party material. The upstream README's MIT statement is the available evidence of its declared terms; the missing upstream license file leaves its exact copyright notice and the provenance of individual inherited assets uncertain.
+
+Dependencies and assets retain their own licenses. See [third-party audit](docs/third_party_audit.md) and the [frontend runtime notices](frontend/public/THIRD_PARTY_NOTICES.txt). The separate ItsDangerous evaluation repository is distributed by Pallets under BSD-3-Clause and is not bundled wholesale. Review applicable notices for any distributed build, dependencies or model weights.
