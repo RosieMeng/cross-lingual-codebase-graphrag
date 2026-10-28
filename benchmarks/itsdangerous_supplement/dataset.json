@@ -1,0 +1,360 @@
+{
+  "version": "itsdangerous-supplement-v1",
+  "repositories": {
+    "itsdangerous": {
+      "revision": "672971d66a2ef9f85151e53283113f33d642dabd",
+      "upstream": "https://github.com/pallets/itsdangerous",
+      "license": "BSD-3-Clause",
+      "source_sha256": {
+        "docs/conf.py": "d31cee7e47f18e99991f42c3b4b04a7c57a52e2ae07a69e6b74cc840ba25bc04",
+        "src/itsdangerous/__init__.py": "3950f45e028929bd1e55e7595efb2e3c1f1b7b8ee83f899eba1eb0e99bac983c",
+        "src/itsdangerous/_json.py": "b38bef90cfcd6ee2fdee115b644921d78e63754aef2e7ddd63a987a86a7c18cf",
+        "src/itsdangerous/encoding.py": "6546d4dcaca3a497dc280795fabd49d76fda2a19f68be6441560ffc5b48bcfac",
+        "src/itsdangerous/exc.py": "8b10e1d63a11c362641b272b4c8431bfe19eaf1108e63ff34dd2cfb6c4006a03",
+        "src/itsdangerous/serializer.py": "63c30599269bdc92c690bdd631b8ae6cc648dbb63998c766c3542292872047be",
+        "src/itsdangerous/signer.py": "85d41ef5f64eb63e1299cad82d775b6021950cbfad355af3021084267be663c6",
+        "src/itsdangerous/timed.py": "4fab550338d97c65ba6ea124f0ac021fb1e4b50299a725d7d66f9924957f7fcf",
+        "src/itsdangerous/url_safe.py": "4d7db7718099818b3ec71b700d8397e3b5ce12ee9dcb345885b77ade693fb1be",
+        "tests/test_itsdangerous/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "tests/test_itsdangerous/test_encoding.py": "09737ba8bfb02128d6559e08f11a1ada45d2b67fe8f54c5b672570074ec7b156",
+        "tests/test_itsdangerous/test_serializer.py": "60e150044b51c3403a4a093948f22ae8150abd604e0d79ba06b04fda48dc5e74",
+        "tests/test_itsdangerous/test_signer.py": "5076bbd9be5302c83e94a0510f6fe896b6715c647e9793644f89c357b96e7d58",
+        "tests/test_itsdangerous/test_timed.py": "42d2644a1b6526b263706e4d27a6ea55e09f45e01bffe97a1cf9d803362eb877",
+        "tests/test_itsdangerous/test_url_safe.py": "8cb92b1b36fc18c86f9521257d373a6191040005cd77c4cf5c5714b3ffea5ce5"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": "sign",
+      "repo": "itsdangerous",
+      "type": "definition",
+      "targets": [
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.sign",
+          "function": "sign",
+          "line_start": 222,
+          "line_end": 225
+        }
+      ],
+      "relationship": null,
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "encoding",
+      "repo": "itsdangerous",
+      "type": "behavior",
+      "targets": [
+        {
+          "file": "src/itsdangerous/encoding.py",
+          "qualified": "base64_encode",
+          "function": "base64_encode",
+          "line_start": 20,
+          "line_end": 25
+        }
+      ],
+      "relationship": null,
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "callee",
+      "repo": "itsdangerous",
+      "type": "callee",
+      "targets": [
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.sign",
+          "function": "sign",
+          "line_start": 222,
+          "line_end": 225
+        },
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.get_signature",
+          "function": "get_signature",
+          "line_start": 215,
+          "line_end": 220
+        }
+      ],
+      "relationship": {
+        "expression": "self.get_signature",
+        "line": 225,
+        "resolution": "same_class_self_method",
+        "runtime_verified": false
+      },
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "caller",
+      "repo": "itsdangerous",
+      "type": "caller",
+      "targets": [
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.validate",
+          "function": "validate",
+          "line_start": 258,
+          "line_end": 266
+        },
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.unsign",
+          "function": "unsign",
+          "line_start": 244,
+          "line_end": 256
+        }
+      ],
+      "relationship": {
+        "expression": "self.unsign",
+        "line": 263,
+        "resolution": "same_class_self_method",
+        "runtime_verified": false
+      },
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "cross",
+      "repo": "itsdangerous",
+      "type": "cross_module",
+      "targets": [
+        {
+          "file": "src/itsdangerous/url_safe.py",
+          "qualified": "URLSafeSerializerMixin.dump_payload",
+          "function": "dump_payload",
+          "line_start": 55,
+          "line_end": 69
+        },
+        {
+          "file": "src/itsdangerous/encoding.py",
+          "qualified": "base64_encode",
+          "function": "base64_encode",
+          "line_start": 20,
+          "line_end": 25
+        }
+      ],
+      "relationship": {
+        "expression": "base64_encode",
+        "line": 64,
+        "resolution": "relative import and call checked; graph analyzer unresolved",
+        "runtime_verified": false
+      },
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "ambiguous",
+      "repo": "itsdangerous",
+      "type": "ambiguous",
+      "targets": [
+        {
+          "file": "src/itsdangerous/signer.py",
+          "qualified": "Signer.sign",
+          "function": "sign",
+          "line_start": 222,
+          "line_end": 225
+        },
+        {
+          "file": "src/itsdangerous/timed.py",
+          "qualified": "TimestampSigner.sign",
+          "function": "sign",
+          "line_start": 45,
+          "line_end": 51
+        }
+      ],
+      "relationship": null,
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "absent",
+      "repo": "itsdangerous",
+      "type": "no_answer",
+      "targets": [],
+      "relationship": null,
+      "annotation_method": "Python AST; static facts only",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    }
+  ],
+  "queries": [
+    {
+      "id": "sign-en",
+      "task_id": "sign",
+      "language": "en",
+      "question": "Where is `Signer.sign` defined?"
+    },
+    {
+      "id": "sign-fr",
+      "task_id": "sign",
+      "language": "fr",
+      "question": "Où est défini `Signer.sign` ?"
+    },
+    {
+      "id": "sign-zh",
+      "task_id": "sign",
+      "language": "zh",
+      "question": "`Signer.sign` 定义在哪里？"
+    },
+    {
+      "id": "sign-mixed",
+      "task_id": "sign",
+      "language": "mixed",
+      "question": "Where est défini `Signer.sign` ?"
+    },
+    {
+      "id": "encoding-en",
+      "task_id": "encoding",
+      "language": "en",
+      "question": "Where is URL-safe base64 encoding implemented?"
+    },
+    {
+      "id": "encoding-fr",
+      "task_id": "encoding",
+      "language": "fr",
+      "question": "Où est implémenté l'encodage base64 compatible avec les URL ?"
+    },
+    {
+      "id": "encoding-zh",
+      "task_id": "encoding",
+      "language": "zh",
+      "question": "哪里实现了适用于 URL 的 base64 编码？"
+    },
+    {
+      "id": "encoding-mixed",
+      "task_id": "encoding",
+      "language": "mixed",
+      "question": "Where is l'encodage base64 compatible URL implemented?"
+    },
+    {
+      "id": "callee-en",
+      "task_id": "callee",
+      "language": "en",
+      "question": "What does `Signer.sign` call?"
+    },
+    {
+      "id": "callee-fr",
+      "task_id": "callee",
+      "language": "fr",
+      "question": "Qu'appelle `Signer.sign` ?"
+    },
+    {
+      "id": "callee-zh",
+      "task_id": "callee",
+      "language": "zh",
+      "question": "`Signer.sign` 调用了什么？"
+    },
+    {
+      "id": "callee-mixed",
+      "task_id": "callee",
+      "language": "mixed",
+      "question": "What does `Signer.sign` appeler ?"
+    },
+    {
+      "id": "caller-en",
+      "task_id": "caller",
+      "language": "en",
+      "question": "Who calls `Signer.unsign`?"
+    },
+    {
+      "id": "caller-fr",
+      "task_id": "caller",
+      "language": "fr",
+      "question": "Qui appelle `Signer.unsign` ?"
+    },
+    {
+      "id": "caller-zh",
+      "task_id": "caller",
+      "language": "zh",
+      "question": "谁调用了 `Signer.unsign`？"
+    },
+    {
+      "id": "caller-mixed",
+      "task_id": "caller",
+      "language": "mixed",
+      "question": "Who appelle `Signer.unsign` ?"
+    },
+    {
+      "id": "cross-en",
+      "task_id": "cross",
+      "language": "en",
+      "question": "Where does URL-safe serialization use the base64 encoder?"
+    },
+    {
+      "id": "cross-fr",
+      "task_id": "cross",
+      "language": "fr",
+      "question": "Où la sérialisation compatible URL utilise-t-elle l'encodeur base64 ?"
+    },
+    {
+      "id": "cross-zh",
+      "task_id": "cross",
+      "language": "zh",
+      "question": "URL 安全序列化在哪里使用 base64 编码器？"
+    },
+    {
+      "id": "cross-mixed",
+      "task_id": "cross",
+      "language": "mixed",
+      "question": "Where does la sérialisation URL use the base64 encoder?"
+    },
+    {
+      "id": "ambiguous-en",
+      "task_id": "ambiguous",
+      "language": "en",
+      "question": "Where is `sign` defined?"
+    },
+    {
+      "id": "ambiguous-fr",
+      "task_id": "ambiguous",
+      "language": "fr",
+      "question": "Où est défini `sign` ?"
+    },
+    {
+      "id": "ambiguous-zh",
+      "task_id": "ambiguous",
+      "language": "zh",
+      "question": "`sign` 定义在哪里？"
+    },
+    {
+      "id": "ambiguous-mixed",
+      "task_id": "ambiguous",
+      "language": "mixed",
+      "question": "Where est défini `sign` ?"
+    },
+    {
+      "id": "absent-en",
+      "task_id": "absent",
+      "language": "en",
+      "question": "Where is `Signer.teleport` defined?"
+    },
+    {
+      "id": "absent-fr",
+      "task_id": "absent",
+      "language": "fr",
+      "question": "Où est défini `Signer.teleport` ?"
+    },
+    {
+      "id": "absent-zh",
+      "task_id": "absent",
+      "language": "zh",
+      "question": "`Signer.teleport` 定义在哪里？"
+    },
+    {
+      "id": "absent-mixed",
+      "task_id": "absent",
+      "language": "mixed",
+      "question": "Where est défini `Signer.teleport` ?"
+    }
+  ]
+}

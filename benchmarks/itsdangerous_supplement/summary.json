@@ -1,0 +1,259 @@
+{
+  "eligible_tasks": [
+    "caller",
+    "cross",
+    "encoding"
+  ],
+  "eligible_queries": 12,
+  "source_index_unchanged": true,
+  "groups": {
+    "all": {
+      "n": 12,
+      "vector": {
+        "hit5": 1.0,
+        "mrr5": 0.7916666666666666
+      },
+      "bm25": {
+        "hit5": 0.0,
+        "mrr5": 0.0
+      },
+      "raw": {
+        "hit5": 1.0,
+        "mrr5": 0.42500000000000004
+      },
+      "translation_only": {
+        "hit5": 1.0,
+        "mrr5": 0.42500000000000004
+      }
+    },
+    "en": {
+      "n": 3,
+      "vector": {
+        "hit5": 1.0,
+        "mrr5": 0.7777777777777777
+      },
+      "bm25": {
+        "hit5": 0.0,
+        "mrr5": 0.0
+      },
+      "raw": {
+        "hit5": 1.0,
+        "mrr5": 0.2888888888888889
+      },
+      "translation_only": {
+        "hit5": 1.0,
+        "mrr5": 0.2888888888888889
+      }
+    },
+    "fr": {
+      "n": 3,
+      "vector": {
+        "hit5": 1.0,
+        "mrr5": 0.7777777777777777
+      },
+      "bm25": {
+        "hit5": 0.0,
+        "mrr5": 0.0
+      },
+      "raw": {
+        "hit5": 1.0,
+        "mrr5": 0.39999999999999997
+      },
+      "translation_only": {
+        "hit5": 1.0,
+        "mrr5": 0.39999999999999997
+      }
+    },
+    "zh": {
+      "n": 3,
+      "vector": {
+        "hit5": 1.0,
+        "mrr5": 0.8333333333333334
+      },
+      "bm25": {
+        "hit5": 0.0,
+        "mrr5": 0.0
+      },
+      "raw": {
+        "hit5": 1.0,
+        "mrr5": 0.4444444444444444
+      },
+      "translation_only": {
+        "hit5": 1.0,
+        "mrr5": 0.4444444444444444
+      }
+    },
+    "mixed": {
+      "n": 3,
+      "vector": {
+        "hit5": 1.0,
+        "mrr5": 0.7777777777777777
+      },
+      "bm25": {
+        "hit5": 0.0,
+        "mrr5": 0.0
+      },
+      "raw": {
+        "hit5": 1.0,
+        "mrr5": 0.5666666666666667
+      },
+      "translation_only": {
+        "hit5": 1.0,
+        "mrr5": 0.5666666666666667
+      }
+    }
+  },
+  "failures": [
+    {
+      "query": "encoding-en",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "encoding-fr",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "encoding-zh",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "encoding-mixed",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "caller-en",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "caller-fr",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "caller-zh",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "caller-mixed",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "cross-en",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "cross-fr",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "cross-zh",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    },
+    {
+      "query": "cross-mixed",
+      "hit": {
+        "vector": 1,
+        "bm25": 0,
+        "raw": 1,
+        "translation_only": 1
+      }
+    }
+  ],
+  "graph": {
+    "caller": {
+      "off": {
+        "all": 0,
+        "n": 4,
+        "mean_context_characters": 2472.0
+      },
+      "qualified": {
+        "all": 4,
+        "n": 4,
+        "mean_context_characters": 3191.25
+      },
+      "grounded": {
+        "all": 4,
+        "n": 4,
+        "mean_context_characters": 3191.25
+      }
+    },
+    "cross": {
+      "off": {
+        "all": 0,
+        "n": 4,
+        "mean_context_characters": 4181.0
+      },
+      "qualified": {
+        "all": 0,
+        "n": 4,
+        "mean_context_characters": 4704.5
+      },
+      "grounded": {
+        "all": 0,
+        "n": 4,
+        "mean_context_characters": 4704.5
+      }
+    }
+  },
+  "rewrite_status": {
+    "english_original": 9,
+    "rewrite_not_english": 10,
+    "abstained": 7,
+    "rewritten": 1,
+    "rewrite_invalid": 1
+  }
+}
