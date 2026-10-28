@@ -2,6 +2,12 @@
 
 These are local checks, not human-validated benchmark results or a legal clearance.
 
+## Cleanup update (2026-10-28)
+
+The current frontend removes the previously identified unverified static assets and mock terminal claims, replaces external fonts with system fonts, and includes selected runtime notices. Their old Git objects remain in history. See [third-party audit](third_party_audit.md) for precise scope and unresolved notices. The upstream license grant and historical asset rights remain unconfirmed.
+
+The GitHub connector reported the repository private, one merged pull request, no issue results and no PR comments. Its workflow-run endpoint is limited to first-page pull-request-triggered runs for the queried commit; no runs were returned for the merge and PR-head commits. The local GitHub CLI authentication was invalid, so all Actions runs, job logs, artifacts, releases, discussions and other GitHub-hosted material could not be comprehensively inspected. An authorized account must review those before changing visibility. Do not assume that the absence of workflow files in the current tree proves historic logs do not exist.
+
 ## Publication refs and files
 
 On 2026-10-28, `git ls-remote --heads --tags origin` advertised only `refs/heads/main` at `5ecc90ef1ff3768b9dfc01f373379e639595207f` and no tags. Its commit matches the locally cached remote main. The local feature branch was not advertised. A targeted scan of blobs reachable from local main, cached remote main, and the feature branch found no matches for the selected private-key, token, personal Windows path, database/index filename or >1 MB checks. This is not a comprehensive secret scan. Local `refs/codex/turn-diffs/*` do contain historical validation/index blobs and a personal path; these are not reachable from the checked branches and must not be published. Never use `--mirror` or push those refs. This inspection does not establish GitHub visibility, permissions or future remote changes.

@@ -98,3 +98,5 @@ Python static analysis cannot fully resolve dynamic dispatch, inheritance or all
 ## Attribution and licensing
 
 The upstream Repo-Sage README says MIT, but its referenced license file was absent from the inspected tree. The exact upstream grant and copyright attribution remain unconfirmed; this repository must not be represented as unconditionally cleared for public redistribution. [Release licensing notes and issue draft](docs/release_licensing.md) record the evidence and outstanding actions. ItsDangerous is a separate BSD-3-Clause evaluation repository and is not bundled wholesale.
+
+The [third-party audit](docs/third_party_audit.md) describes inherited assets and dependency license gaps. Selected frontend runtime notices are included in [THIRD_PARTY_NOTICES.txt](frontend/public/THIRD_PARTY_NOTICES.txt). Review the full dependency notices for the specific distribution being shipped.

@@ -15,8 +15,8 @@ export default {
         success: '#10B981',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'monospace'],
       }
     },
   },

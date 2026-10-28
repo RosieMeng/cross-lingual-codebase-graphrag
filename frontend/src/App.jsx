@@ -123,7 +123,7 @@ function App() {
             <BrainCircuit size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="font-bold tracking-tight text-lg leading-tight">RepoSage</h1>
+            <h1 className="font-bold tracking-tight text-lg leading-tight">Codebase GraphRAG</h1>
             <p className="text-xs text-slate-400 font-medium tracking-wide">AI CODE INTELLIGENCE</p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BrainCircuit, Rocket, Network, Terminal, Shield } from 'lucide-react';
+import { BrainCircuit, Rocket, Network, FileSearch, Languages } from 'lucide-react';
 
 export default function LandingPage() {
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -12,11 +12,11 @@ export default function LandingPage() {
       </motion.div>
       
       <motion.h1 variants={item} className="text-5xl md:text-6xl font-black tracking-tight text-center mb-4 leading-tight">
-        Understand Any Codebase <br/><span className="text-gradient">in Minutes</span>
+        Explore source code <br/><span className="text-gradient">across languages</span>
       </motion.h1>
       
       <motion.p variants={item} className="text-slate-400 text-lg text-center max-w-2xl mb-10 leading-relaxed">
-        Index any GitHub repository and ask natural language questions. Get answers with precise <strong className="text-slate-200">file:line</strong> citations, powered by RAG and local LLMs.
+        Index a repository and ask questions in English, French, Chinese or a mix. Inspect the retrieved source locations and verify explanations against the code.
       </motion.p>
       
       <motion.div variants={item} className="flex gap-4 mb-16">
@@ -25,29 +25,21 @@ export default function LandingPage() {
         </div>
       </motion.div>
 
-      {/* Mock Terminal Animation */}
-      <motion.div variants={item} className="w-full max-w-3xl glass-card p-4 shadow-2xl overflow-hidden mb-20 relative">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50"></div>
-        <div className="flex gap-2 mb-4 px-2">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-          <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-        </div>
-        <div className="font-mono text-sm text-slate-300 space-y-2 px-2 pb-2">
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.5}} className="flex gap-3"><span className="text-indigo-400">$</span> <span>reposage index https://github.com/facebook/react</span></motion.div>
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.5}} className="text-slate-500">Cloning repository... done.</motion.div>
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:1.8}} className="text-slate-500">Chunking 12,453 files using AST parsing...</motion.div>
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:2.1}} className="text-emerald-400 font-semibold">Success! Indexed in 18.4s</motion.div>
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:3.0}} className="flex gap-3"><span className="text-indigo-400">$</span> <span>ask "how does the fiber reconciler handle state updates?"</span></motion.div>
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:4.2}} className="text-slate-400 border-l-2 border-indigo-500 pl-3 py-1 my-2">The Fiber reconciler schedules updates in a queue attached to the fiber node... <span className="text-indigo-300 ml-2">📄 src/react-reconciler/ReactFiberWorkLoop.js:142</span></motion.div>
-        </div>
+      <motion.div variants={item} className="w-full max-w-3xl glass-card p-6 mb-20 text-left">
+        <h2 className="text-sm font-semibold text-slate-200 mb-4">Example questions for micrograd</h2>
+        <ul className="space-y-3 text-sm text-slate-300">
+          <li>Where is <code>Value.backward</code> defined?</li>
+          <li>Qu'appelle <code>Value.backward</code> ?</li>
+          <li><code>Value.backward</code> 调用了哪些函数？</li>
+        </ul>
+        <p className="mt-4 text-xs text-slate-400">Examples depend on the indexed repository. Graph references are static observations, not proof of runtime calls.</p>
       </motion.div>
 
       {/* Feature Grid */}
       <motion.div variants={container} className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-        <FeatureCard icon={<Network size={20}/>} title="Architecture Analysis" desc="Map module connections, entry points, and overall system design." color="text-indigo-400" bg="bg-indigo-500/10" />
-        <FeatureCard icon={<Terminal size={20}/>} title="API Discovery" desc="Find all endpoints, routes, schemas, and middleware chains." color="text-violet-400" bg="bg-violet-500/10" />
-        <FeatureCard icon={<Shield size={20}/>} title="Security Review" desc="Identify auth patterns, input validation, and token handling." color="text-emerald-400" bg="bg-emerald-500/10" />
+        <FeatureCard icon={<Network size={20}/>} title="Source graph" desc="Explore available static caller and callee evidence." color="text-indigo-400" bg="bg-indigo-500/10" />
+        <FeatureCard icon={<FileSearch size={20}/>} title="Source evidence" desc="Inspect retrieved file paths, symbols and line ranges." color="text-violet-400" bg="bg-violet-500/10" />
+        <FeatureCard icon={<Languages size={20}/>} title="Multilingual questions" desc="Ask in English, French, Chinese or mixed language." color="text-emerald-400" bg="bg-emerald-500/10" />
       </motion.div>
     </motion.div>
   );

@@ -4,7 +4,7 @@ This is a fact-finding record, not a legal opinion or a grant of rights. [Repo-S
 
 The independent ItsDangerous checkout is [Pallets/ItsDangerous](https://github.com/pallets/itsdangerous) at `672971d66a2ef9f85151e53283113f33d642dabd`; its LICENSE.txt says copyright 2011 Pallets and contains the BSD 3-Clause terms. The checkout and built index are not bundled. Source-derived facts and small excerpts still deserve attribution and review.
 
-Dependencies and frontend packages have separate terms. The installed Ollama models identify Apache-2.0 in `ollama show`; model distribution, model licenses, npm transitive dependencies, fonts, and bundled frontend assets have not been exhaustively checked. The generated build and `node_modules` are not proposed for Git. A complete dependency and asset notice audit remains outstanding.
+Dependencies and frontend packages have separate terms. See [the third-party audit](third_party_audit.md) for installed package notices, unresolved package-file gaps, and inherited assets. The installed Ollama models identify Apache-2.0 in `ollama show`; model distribution and its terms require separate review. The generated build and `node_modules` are not proposed for Git. A complete dependency and historical asset notice audit remains outstanding. A separate [MIT draft](LICENSE-MIT-DRAFT.txt) is explicitly for review and is not a root license grant.
 
 ## Suggested maintainer issue (draft only; not posted)
 
