@@ -119,6 +119,26 @@ def test_agent_preserves_original_question_and_remaps_graph_citations(monkeypatc
     assert [g["relationships"][0]["caller_citation_id"] for g in result["graph_traces"]] == ["S1", "S2"]
 
 
+def test_agent_reports_no_tools_for_evidence_first_graph_answer(monkeypatch):
+    import reposage.query.agent_engine as module
+    class Model:
+        def __init__(self, **kwargs): pass
+        def bind_tools(self, tools): return self
+        def invoke(self, messages): pytest.fail("Agent model should not run for a grounded relationship answer")
+    class Rag:
+        def __init__(self, **kwargs): self.source_graph = {"schema": "v2"}
+        def query(self, **kwargs):
+            assert kwargs["question"] == "What does Value.backward call?"
+            return {"answer": "Static reference [S1]", "sources": [], "evidence": [], "answer_mode": "graph_evidence"}
+    import pytest
+    monkeypatch.setattr(module, "ChatOllama", Model)
+    monkeypatch.setattr(module, "CodeRAGEngine", Rag)
+    result = module.CodeAgentEngine("sample").query("What does Value.backward call?")
+    assert result["execution_mode"] == "graph_grounded_rag"
+    assert result["tools_executed"] is False
+    assert result["answer_mode"] == "graph_evidence"
+
+
 def test_agent_no_tool_fallback_preserves_genuine_rag_evidence(monkeypatch):
     import reposage.query.agent_engine as module
     doc = Document(page_content="def foo(): pass", metadata={"repo": "sample", "file": "a.py", "name": "foo", "line_start": 3, "line_end": 5, "type": "function"})

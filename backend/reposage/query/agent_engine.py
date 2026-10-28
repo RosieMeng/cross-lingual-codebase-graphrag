@@ -13,7 +13,7 @@ from langchain_ollama import ChatOllama
 from .rag_engine import CodeRAGEngine
 from .multilingual_query import PlannerConfig
 from .evidence import audit_citations
-from .source_graph import graph_context
+from .source_graph import graph_context, requested_direction
 from ..security import normalize_repo_relative_path, resolve_repo_file, validate_repo_name
 
 logger = logging.getLogger(__name__)
@@ -213,6 +213,9 @@ class CodeAgentEngine:
         messages.append(HumanMessage(content=question))
         
         try:
+            if (getattr(self.rag_engine, "source_graph", None) or getattr(self.rag_engine, "disable_legacy_graph", False)) and requested_direction(question) != "both":
+                grounded = self.rag_engine.query(question=question, k=k, chat_history=chat_history)
+                return {**grounded, "tools_executed": False, "execution_mode": "graph_grounded_rag"}
             result = self.app.invoke(
                 {"messages": messages, "repo_name": self.repo_name, "original_question": question, "evidence": [], "graph_traces": []},
                 config={"recursion_limit": 10}

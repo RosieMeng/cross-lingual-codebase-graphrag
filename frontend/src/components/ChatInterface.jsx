@@ -271,6 +271,9 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                 {m.executionMode?.startsWith('rag_fallback') && (
                   <p className="mt-3 text-xs text-amber-300">Agent search did not complete; standard retrieval was used.</p>
                 )}
+                {m.executionMode === 'graph_grounded_rag' && (
+                  <p className="mt-3 text-xs text-slate-400">Graph-grounded RAG response; Agent tools were not run.</p>
+                )}
                 {m.answerTruncated && (
                   <p className="mt-3 text-xs text-amber-300">The answer reached its length limit and may be incomplete.</p>
                 )}

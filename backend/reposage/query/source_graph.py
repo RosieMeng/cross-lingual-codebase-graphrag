@@ -73,12 +73,13 @@ def load_graph(path, repo_name):
 def graph_context(info, evidence):
     """Attach source IDs where call-site chunks are actually in context."""
     ids = {e["id"]: e["citation_id"] for e in evidence}
-    if info.get("lookup_status") in {"ambiguous", "not_found", "unavailable_chunk", "unavailable_budget"}:
+    if info.get("lookup_status") in {"ambiguous", "not_found", "unavailable_chunk", "unavailable_budget", "unavailable"}:
         return "\n\nExact symbol grounding was inconclusive; do not assume a unique target without evidence."
     lines = []
     for edge in info.get("relationships", []):
         cite = ids.get(edge.get("caller_chunk_id"))
         edge["caller_citation_id"] = cite
+        edge["callee_citation_id"] = ids.get(edge.get("callee_chunk_id"))
         location = f"{edge['caller_file']}:{edge['call_line']}"
         lines.append(f"Static reference: {edge['caller']} -> {edge['callee']} at {location}" + (f" [{cite}]" if cite else " (caller source not retrieved)"))
     for call in info.get("unresolved", []):
@@ -99,7 +100,7 @@ def graph_context(info, evidence):
     return "\n\nGraph references are static, not proof of runtime dispatch. Unresolved targets are not confirmed relationships.\n" + "\n".join(selected)
 
 
-def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH_CHUNKS, max_chars=MAX_GRAPH_CHARS, diagnostics=None):
+def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH_CHUNKS, max_chars=MAX_GRAPH_CHARS, diagnostics=None, *, _seed_fallback=False):
     """Use exact seed identities and only indexed, bounded one-hop evidence."""
     if max_chunks <= 0 or max_chars <= 0:
         return []
@@ -121,11 +122,9 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
         adjacency[edge["source"]]["callees"].append(edge["target"])
         adjacency[edge["target"]]["callers"].append(edge["source"])
     direction = requested_direction(question)
-    lookup = resolve_symbol(graph, question)
+    lookup = SymbolLookup("not_applicable") if _seed_fallback else resolve_symbol(graph, question)
     info = diagnostics if diagnostics is not None else {}
     info.update({"lookup_status": lookup.status, "direction": direction, "root": None, "relationships": [], "unresolved": []})
-    if lookup.status in {"ambiguous", "not_found"}:
-        return []
     def usable(node):
         doc = indexed.get(node.get("chunk_id"))
         if doc is None: return None
@@ -144,7 +143,7 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
         root_doc = usable(root)
         if root_doc is None:
             info["lookup_status"] = "unavailable_chunk"
-            return []
+            return enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks, max_chars, _seed_fallback=True)
         info["root"] = {key: root[key] for key in ("id", "file", "qualified", "line_start", "line_end", "chunk_id", "chunk_mapping")}
         for edge in graph["edges"]:
             if ((direction in ("both", "callees") and edge["source"] == root["id"]) or
@@ -152,6 +151,7 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
                 src, dst = node_map[edge["source"]], node_map[edge["target"]]
                 info["relationships"].append({"caller": src["qualified"], "caller_file": src["file"], "call_line": edge["line"],
                     "expression": edge["expression"], "callee": dst["qualified"], "callee_file": dst["file"],
+                    "callee_line_start": dst["line_start"], "callee_line_end": dst["line_end"], "callee_chunk_id": dst.get("chunk_id"),
                     "resolution": edge["resolution"], "status": "static_reference", "caller_chunk_id": src.get("chunk_id")})
         root_name = root["qualified"].rsplit(".", 1)[-1]
         for call in graph.get("unresolved", []):
@@ -198,5 +198,6 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
         if len(added) >= max_chunks: break
     if root and root["chunk_id"] not in seen:
         info["lookup_status"] = "unavailable_budget"
-        return []
+        info.update({"root": None, "relationships": [], "unresolved": [], "relationships_total": 0, "unresolved_total": 0})
+        return enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks, max_chars, _seed_fallback=True)
     return added

@@ -29,7 +29,8 @@ from .query_transformer import QueryTransformer
 from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter, detect_language
 from .code_aware_query import CodeAwareQueryPlanner
 from .evidence import evidence_from_docs, audit_citations, chunk_identity
-from .source_graph import enrich as enrich_source_graph, load_graph as load_source_graph, graph_context
+from .source_graph import enrich as enrich_source_graph, load_graph as load_source_graph, graph_context, requested_direction
+from .graph_answer import graph_answer
 
 logger = logging.getLogger(__name__)
 
@@ -423,11 +424,14 @@ class CodeRAGEngine:
         # Retrieve documents concurrently
         graph_info = {}
         docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question if retrieval_original_question is None else retrieval_original_question, graph_observer=graph_info.update)
+        if (getattr(self, "source_graph", None) or getattr(self, "disable_legacy_graph", False)) and not graph_info:
+            graph_info.update({"lookup_status": "unavailable", "direction": requested_direction(question if retrieval_original_question is None else retrieval_original_question)})
 
         evidence = evidence_from_docs(docs, self.repo_name)
         if not evidence:
+            grounded = graph_answer(question if retrieval_original_question is None else retrieval_original_question, graph_info, evidence)
             return {
-                "answer": "I couldn't find any relevant code in the indexed repository. "
+                "answer": grounded or "I couldn't find any relevant code in the indexed repository. "
                           "Try rephrasing your question or make sure the repository "
                           "has been indexed correctly.",
                 "sources": [],
@@ -435,10 +439,16 @@ class CodeRAGEngine:
                 "evidence": [],
                 "citation_audit": audit_citations("", []),
                 "graph": graph_info,
+                "answer_mode": "graph_evidence" if grounded is not None else "model",
             }
 
         # Format context and build prompt
         context = self._format_context(docs) + graph_context(graph_info, evidence)
+        grounded = graph_answer(question if retrieval_original_question is None else retrieval_original_question, graph_info, evidence)
+        if grounded is not None:
+            return {"answer": grounded, "sources": [f"{item['file']}:{item['line_start']}" for item in evidence],
+                    "chunks_used": len(docs), "evidence": evidence, "citation_audit": audit_citations(grounded, evidence),
+                    "graph": graph_info, "answer_truncated": False, "answer_mode": "graph_evidence"}
 
         messages = [
             SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" +
@@ -489,18 +499,28 @@ class CodeRAGEngine:
         # Retrieve documents concurrently
         graph_info = {}
         docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question, graph_observer=graph_info.update)
+        if (getattr(self, "source_graph", None) or getattr(self, "disable_legacy_graph", False)) and not graph_info:
+            graph_info.update({"lookup_status": "unavailable", "direction": requested_direction(question)})
 
         evidence = evidence_from_docs(docs, self.repo_name)
         if not evidence:
+            grounded = graph_answer(question, graph_info, evidence)
             yield {
                 "type": "token",
-                "content": "I couldn't find any relevant code in the indexed repository.",
+                "content": grounded or "I couldn't find any relevant code in the indexed repository.",
             }
             yield {"type": "sources", "sources": [], "evidence": [], "citation_audit": audit_citations("", []), "graph": graph_info}
-            yield {"type": "done"}
+            yield {"type": "done", "answer_mode": "graph_evidence" if grounded is not None else "model"}
             return
 
         context = self._format_context(docs) + graph_context(graph_info, evidence)
+        grounded = graph_answer(question, graph_info, evidence)
+        if grounded is not None:
+            yield {"type": "token", "content": grounded}
+            yield {"type": "sources", "sources": [f"{item['file']}:{item['line_start']}" for item in evidence],
+                   "evidence": evidence, "citation_audit": audit_citations(grounded, evidence), "graph": graph_info}
+            yield {"type": "done", "answer_truncated": False, "answer_mode": "graph_evidence"}
+            return
 
         messages = [
             SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" + _answer_language_instruction(question)),

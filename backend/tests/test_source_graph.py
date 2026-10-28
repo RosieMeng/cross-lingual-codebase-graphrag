@@ -78,6 +78,32 @@ def test_traversal_prefers_higher_ranked_seed_before_budget_cutoff(tmp_path):
     assert [(d.metadata["file"], d.metadata["name"]) for d in directed] == [("a.py", "A")]
 
 
+def test_unavailable_grounded_root_falls_back_to_seed_graph(tmp_path):
+    docs, _ = fixture(tmp_path)
+    root = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "run")
+    root.page_content += "\n" + "x" * 1000
+    graph = build_source_graph(tmp_path, docs, "fixture")
+    helper = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
+    info = {}
+    actual = enrich(graph, [helper], docs, "fixture", "Find A.run", max_chars=500, diagnostics=info)
+    assert info["lookup_status"] == "unavailable_budget"
+    assert info["root"] is None and info["relationships"] == []
+    assert {(d.metadata["file"], d.metadata["name"]) for d in actual} == {("a.py", "caller"), ("b.py", "cross")}
+
+
+def test_stale_grounded_root_falls_back_without_guessing(tmp_path):
+    docs, graph = fixture(tmp_path)
+    changed = [d.model_copy(deep=True) for d in docs]
+    root = next(d for d in changed if d.metadata["file"] == "a.py" and d.metadata["name"] == "run")
+    root.page_content += "\n# stale"
+    helper = next(d for d in changed if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
+    info = {}
+    actual = enrich(graph, [helper], changed, "fixture", "Find A.run", diagnostics=info)
+    assert info["lookup_status"] == "unavailable_chunk"
+    assert info["root"] is None and info["relationships"] == [] and info["unresolved"] == []
+    assert {(d.metadata["file"], d.metadata["name"]) for d in actual} == {("a.py", "caller"), ("b.py", "cross")}
+
+
 def test_exact_symbol_lookup_ambiguous_names_and_file_context(tmp_path):
     docs, graph = fixture(tmp_path)
     assert resolve_symbol(graph, "Who calls A.run?").status == "matched"
@@ -90,8 +116,32 @@ def test_exact_symbol_lookup_ambiguous_names_and_file_context(tmp_path):
     assert resolve_symbol(graph, "Where are caller functions?").status == "not_applicable"
     helper = next(d for d in docs if d.metadata["name"] == "helper")
     details = {}
-    assert enrich(graph, [helper], docs, "fixture", "Who calls `caller`?", diagnostics=details) == []
+    fallback = enrich(graph, [helper], docs, "fixture", "Who calls `caller`?", diagnostics=details)
+    assert {(d.metadata["file"], d.metadata["name"]) for d in fallback} == {("a.py", "caller"), ("b.py", "cross")}
     assert details["lookup_status"] == "ambiguous"
+    assert details["root"] is None and details["relationships"] == [] and details["unresolved"] == []
+
+
+@pytest.mark.parametrize("question,expected", [
+    ("Find `caller` and `helper`", "ambiguous"),
+    ("Find `caller`", "ambiguous"),
+    ("Find `missing`", "not_found"),
+    ("Explain the calculation", "not_applicable"),
+])
+def test_lookup_abstention_preserves_qualified_seed_fallback(tmp_path, question, expected):
+    from unittest.mock import patch
+    from reposage.query.source_graph import SymbolLookup
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
+    info = {}
+    actual = enrich(graph, [helper], docs, "fixture", question, diagnostics=info)
+    with patch("reposage.query.source_graph.resolve_symbol", return_value=SymbolLookup("not_applicable")):
+        expected_docs = enrich(graph, [helper], docs, "fixture", question)
+    assert [chunk_identity(d, "fixture") for d in actual] == [chunk_identity(d, "fixture") for d in expected_docs]
+    assert len(actual) == 2
+    assert info["lookup_status"] == expected
+    assert info["root"] is None and info["relationships"] == [] and info["unresolved"] == []
+    assert len({chunk_identity(d, "fixture") for d in actual + [helper]}) == len(actual) + 1
 
 
 def test_duplicate_qualified_symbols_require_exact_file_context(tmp_path):
@@ -201,7 +251,7 @@ def test_real_rag_path_sends_graph_source_to_generation(tmp_path):
     engine.graph = None
     engine.source_graph = graph
     engine.llm = SimpleNamespace(invoke=lambda messages: (captured.extend(messages), SimpleNamespace(content="Found [S2]", response_metadata={}))[1])
-    result = engine.query("Who calls helper?", k=1)
+    result = engine.query("Explain helper", k=1)
     graph_evidence = [e for e in result["evidence"] if e["retrieval_stage"] == "graph"]
     assert {(e["file"], e["symbol"]) for e in graph_evidence} == {("a.py", "caller"), ("b.py", "cross")}
     assert all(any(d.metadata["file"] == e["file"] and d.metadata["line_start"] == e["line_start"]
@@ -229,9 +279,74 @@ def test_rag_returns_grounded_root_and_cited_callsite(tmp_path):
     assert result["graph"]["root"]["qualified"] == "A.run"
     relation = result["graph"]["relationships"][0]
     assert relation["caller_citation_id"] == "S2"
-    assert "at a.py:18 [S2]" in captured[1].content
+    assert "a.py:18 [S2]" in result["answer"]
+    assert not captured
     assert result["evidence"][1]["file"] == "a.py"
     assert result["evidence"][1]["line_start"] == 17
+
+
+def test_graph_failure_abstains_without_calling_model(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    import reposage.query.rag_engine as rag_module
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    retriever = SimpleNamespace(docs=docs, k=1, invoke=lambda _: [helper])
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    engine.repo_name = "fixture"
+    engine.vectorstore = SimpleNamespace(as_retriever=lambda **_: retriever)
+    engine.bm25_retriever = retriever
+    engine.query_transformer = SimpleNamespace(expand_query=lambda q: [q])
+    engine.graph = None
+    engine.source_graph = graph
+    engine.llm = SimpleNamespace(invoke=lambda messages: pytest.fail("must abstain when graph lookup fails"))
+    def fail(*args, **kwargs): raise ValueError("failure")
+    monkeypatch.setattr(rag_module, "enrich_source_graph", fail)
+    result = engine.query("Who calls A.run?", k=1)
+    assert result["graph"]["lookup_status"] == "unavailable"
+    assert result["answer_mode"] == "graph_evidence"
+    assert "cannot identify" in result["answer"]
+
+
+def test_ambiguous_answer_abstains_while_preserving_graph_evidence(tmp_path):
+    from types import SimpleNamespace
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
+    retriever = SimpleNamespace(docs=docs, k=1, invoke=lambda _: [helper])
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    engine.repo_name = "fixture"
+    engine.vectorstore = SimpleNamespace(as_retriever=lambda **_: retriever)
+    engine.bm25_retriever = retriever
+    engine.query_transformer = SimpleNamespace(expand_query=lambda q: [q])
+    engine.graph = None
+    engine.source_graph = graph
+    engine.llm = SimpleNamespace(invoke=lambda *a, **k: pytest.fail("ambiguous answer must abstain"))
+    result = engine.query("Who calls `caller`?", k=1)
+    assert result["graph"]["lookup_status"] == "ambiguous"
+    assert result["graph"]["root"] is None and result["graph"]["relationships"] == []
+    assert "cannot identify" in result["answer"]
+    assert {(e["file"], e["symbol"]) for e in result["evidence"] if e["retrieval_stage"] == "graph"} == {("a.py", "caller"), ("b.py", "cross")}
+
+
+def test_streaming_graph_answer_is_source_bound_without_model(tmp_path):
+    import asyncio
+    from types import SimpleNamespace
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    retriever = SimpleNamespace(docs=docs, k=1, invoke=lambda _: [helper])
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    engine.repo_name = "fixture"
+    engine.vectorstore = SimpleNamespace(as_retriever=lambda **_: retriever)
+    engine.bm25_retriever = retriever
+    engine.query_transformer = SimpleNamespace(expand_query=lambda q: [q])
+    engine.graph = None
+    engine.source_graph = graph
+    engine.llm = SimpleNamespace(astream=lambda *args, **kwargs: pytest.fail("model must not be invoked"))
+    async def collect(): return [event async for event in engine.aquery_stream("What does A.run call?", k=1)]
+    events = asyncio.run(collect())
+    assert events[-1]["answer_mode"] == "graph_evidence"
+    assert events[1]["graph"]["relationships"][0]["caller_citation_id"] == "S2"
+    assert events[1]["citation_audit"]["status"] == "matched"
+    assert "runtime dispatch not verified" in events[0]["content"]
 
 
 def test_missing_explicit_graph_does_not_fall_back_to_legacy(tmp_path):

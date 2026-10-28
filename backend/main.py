@@ -167,6 +167,7 @@ class QueryResponse(BaseModel):
     tools_executed: bool | None = False
     execution_mode: str = "standard"
     answer_truncated: bool = False
+    answer_mode: str = "model"
 
 
 # ─── Endpoints ───
