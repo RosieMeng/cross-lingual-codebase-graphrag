@@ -1,0 +1,20 @@
+{
+  "note": "Captured after evaluation; evaluator CLI gained benchmark selection after the main run and sidecar selection after the supplement. No production code changed.",
+  "code_revision": "6540becbe821ab4b8a550f2e6d3e58a200598852",
+  "working_tree_dirty": true,
+  "python_version": "3.11.17",
+  "platform": "win32",
+  "model_digests_observed_after_run": {
+    "qwen3:1.7b": "8f68893c685c3ddff2aa3fffce2aa60a30bb2da65ca488b61fff134a4d1730e7",
+    "nomic-embed-text:latest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f"
+  },
+  "file_sha256_observed_after_run": {
+    "benchmarks/final_v1/benchmark.json": "c47b4791c4c237023ea1981f156389a3186595594fe56b0f9a47f66be2f868a3",
+    "benchmarks/final_v1/evaluate.py": "ef3fdc2528d2bb5608b1a25f0823e35804945b9f6434a205d011980c356d57eb",
+    "benchmarks/final_v1/summarize.py": "f76b9089a79a3e55ecf3bb66035dd831a3796d13ea01884a5e5b851f6825ab55",
+    "backend/reposage/query/rag_engine.py": "5fa4338737661bbf16289eb405b55757527c3d433f8b8de36f5a39c9deda91bc",
+    "backend/reposage/query/source_graph.py": "c5f227b59e5ab736ef66ca713dc75a8f4200e312c4069a67151492ee602d1571",
+    "backend/reposage/query/graph_answer.py": "5da8140c60750479827356861b2a42d8ecea9fb736a2b2c7509c6c79156b0d8f",
+    "validation/m6b_sidecars/micrograd.json": "60bf423f874f33c9dc477a6156ab1b7e051c22da165be71afa4a9ff5aecbc945"
+  }
+}

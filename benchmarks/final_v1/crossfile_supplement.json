@@ -1,0 +1,86 @@
+{
+  "version": "final-v1-crossfile-supplement-1",
+  "frozen_before_evaluation": true,
+  "independently_human_validated": false,
+  "repositories": {
+    "micrograd": {
+      "revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c",
+      "kind": "upstream repository",
+      "source_sha256": {
+        "micrograd/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "micrograd/engine.py": "1af9687af825bccb3e3359b7621e0da8af38c1a90cc977f6c878a6b8b09eb91a",
+        "micrograd/nn.py": "e5f95338cc4176fb2b6872f969805ece9af79e5f320d32c00ca3d57ae0d4d3ef",
+        "setup.py": "95dd4a2e7c14097ab37f233ff5a662b4c68eb8f7a45d32c6c4fe1424f4bc660b",
+        "test/test_engine.py": "75036a6aa211d4d5bb284dc2ceaa753576b766d133a39142af3441eba2b4cc1d"
+      }
+    },
+    "sample_repo": {
+      "revision": "6540becbe821ab4b8a550f2e6d3e58a200598852",
+      "kind": "synthetic fixture within project repository, not an independent upstream repository",
+      "source_sha256": {
+        "auth.py": "be790d1aaefb19ed609344d970e6ebbfd5cfb8a21899dc19946a9168716e2dc1",
+        "utils.py": "c8aaf0054df1c51f15f4a8f906192988d1cb3867f663710f32417e8bc17b9165"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": "m_crossfile",
+      "repo": "micrograd",
+      "type": "cross_file",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "test/test_engine.py",
+          "qualified": "test_sanity_check",
+          "function": "test_sanity_check",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value",
+          "function": "Value",
+          "line_start": 2,
+          "line_end": 94
+        }
+      ],
+      "relationship": {
+        "caller": "test_sanity_check",
+        "callee": "Value",
+        "call_line": 6,
+        "resolution": "explicit_from_import"
+      },
+      "fact_provenance": "Python AST explicit import and call (pre-existing Milestone 6A case)",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    }
+  ],
+  "queries": [
+    {
+      "id": "m_crossfile-en",
+      "task_id": "m_crossfile",
+      "language": "en",
+      "question": "Find the call from `test_sanity_check` in `test/test_engine.py` to `Value` in `micrograd/engine.py`."
+    },
+    {
+      "id": "m_crossfile-fr",
+      "task_id": "m_crossfile",
+      "language": "fr",
+      "question": "Trouvez l'appel de `test_sanity_check` dans `test/test_engine.py` vers `Value` dans `micrograd/engine.py`."
+    },
+    {
+      "id": "m_crossfile-zh",
+      "task_id": "m_crossfile",
+      "language": "zh",
+      "question": "查找 `test/test_engine.py` 中 `test_sanity_check` 对 `micrograd/engine.py` 中 `Value` 的调用。"
+    },
+    {
+      "id": "m_crossfile-mixed",
+      "task_id": "m_crossfile",
+      "language": "mixed",
+      "question": "Find l'appel de `test_sanity_check` dans `test/test_engine.py` vers `Value` dans `micrograd/engine.py`."
+    }
+  ],
+  "selection_note": "Frozen after main results because the requested cross-file category was omitted; pre-existing Milestone 6A case; report separately."
+}

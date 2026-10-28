@@ -1,0 +1,647 @@
+{
+  "version": "final-v1-candidate-1",
+  "frozen_before_evaluation": true,
+  "independently_human_validated": false,
+  "repositories": {
+    "micrograd": {
+      "revision": "7bc720e951fe422b8f8814aa5aa1b64121d26b4c",
+      "kind": "upstream repository",
+      "source_sha256": {
+        "micrograd/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "micrograd/engine.py": "1af9687af825bccb3e3359b7621e0da8af38c1a90cc977f6c878a6b8b09eb91a",
+        "micrograd/nn.py": "e5f95338cc4176fb2b6872f969805ece9af79e5f320d32c00ca3d57ae0d4d3ef",
+        "setup.py": "95dd4a2e7c14097ab37f233ff5a662b4c68eb8f7a45d32c6c4fe1424f4bc660b",
+        "test/test_engine.py": "75036a6aa211d4d5bb284dc2ceaa753576b766d133a39142af3441eba2b4cc1d"
+      }
+    },
+    "sample_repo": {
+      "revision": "6540becbe821ab4b8a550f2e6d3e58a200598852",
+      "kind": "synthetic fixture within project repository, not an independent upstream repository",
+      "source_sha256": {
+        "auth.py": "be790d1aaefb19ed609344d970e6ebbfd5cfb8a21899dc19946a9168716e2dc1",
+        "utils.py": "c8aaf0054df1c51f15f4a8f906192988d1cb3867f663710f32417e8bc17b9165"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": "m_backward",
+      "repo": "micrograd",
+      "type": "definition",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value.backward",
+          "function": "backward",
+          "line_start": 54,
+          "line_end": 70
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_graph",
+      "repo": "micrograd",
+      "type": "behavior",
+      "identifier": "absent",
+      "targets": [
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value.backward",
+          "function": "backward",
+          "line_start": 54,
+          "line_end": 70
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_callee",
+      "repo": "micrograd",
+      "type": "callee",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value.backward",
+          "function": "backward",
+          "line_start": 54,
+          "line_end": 70
+        },
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value.backward.build_topo",
+          "function": "build_topo",
+          "line_start": 59,
+          "line_end": 64
+        }
+      ],
+      "relationship": {
+        "caller": "Value.backward",
+        "callee": "Value.backward.build_topo",
+        "call_line": 65,
+        "resolution": "lexical_nested_definition"
+      },
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_relu",
+      "repo": "micrograd",
+      "type": "behavior",
+      "identifier": "absent",
+      "targets": [
+        {
+          "file": "micrograd/engine.py",
+          "qualified": "Value.relu",
+          "function": "relu",
+          "line_start": 45,
+          "line_end": 52
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_ambiguous",
+      "repo": "micrograd",
+      "type": "ambiguous",
+      "identifier": "ambiguous",
+      "targets": [
+        {
+          "file": "micrograd/nn.py",
+          "qualified": "Neuron.__call__",
+          "function": "__call__",
+          "line_start": 20,
+          "line_end": 22
+        },
+        {
+          "file": "micrograd/nn.py",
+          "qualified": "Layer.__call__",
+          "function": "__call__",
+          "line_start": 35,
+          "line_end": 37
+        },
+        {
+          "file": "micrograd/nn.py",
+          "qualified": "MLP.__call__",
+          "function": "__call__",
+          "line_start": 51,
+          "line_end": 54
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_noanswer",
+      "repo": "micrograd",
+      "type": "no_answer",
+      "identifier": "present",
+      "targets": [],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_auth",
+      "repo": "sample_repo",
+      "type": "definition",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "auth.py",
+          "qualified": "authenticate_user",
+          "function": "authenticate_user",
+          "line_start": 7,
+          "line_end": 32
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_callee",
+      "repo": "sample_repo",
+      "type": "callee",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "auth.py",
+          "qualified": "authenticate_user",
+          "function": "authenticate_user",
+          "line_start": 7,
+          "line_end": 32
+        },
+        {
+          "file": "auth.py",
+          "qualified": "get_user_from_db",
+          "function": "get_user_from_db",
+          "line_start": 35,
+          "line_end": 38
+        }
+      ],
+      "relationship": {
+        "caller": "authenticate_user",
+        "callee": "get_user_from_db",
+        "call_line": 20,
+        "resolution": "same_module_definition"
+      },
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_hash",
+      "repo": "sample_repo",
+      "type": "behavior",
+      "identifier": "absent",
+      "targets": [
+        {
+          "file": "auth.py",
+          "qualified": "create_password_hash",
+          "function": "create_password_hash",
+          "line_start": 41,
+          "line_end": 53
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_page",
+      "repo": "sample_repo",
+      "type": "behavior",
+      "identifier": "absent",
+      "targets": [
+        {
+          "file": "utils.py",
+          "qualified": "paginate",
+          "function": "paginate",
+          "line_start": 21,
+          "line_end": 47
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_session",
+      "repo": "sample_repo",
+      "type": "definition",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "auth.py",
+          "qualified": "SessionManager.create_session",
+          "function": "create_session",
+          "line_start": 68,
+          "line_end": 86
+        }
+      ],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "s_noanswer",
+      "repo": "sample_repo",
+      "type": "no_answer",
+      "identifier": "present",
+      "targets": [],
+      "relationship": null,
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    },
+    {
+      "id": "m_caller",
+      "repo": "micrograd",
+      "type": "caller",
+      "identifier": "present",
+      "targets": [
+        {
+          "file": "test/test_engine.py",
+          "qualified": "test_sanity_check",
+          "function": "test_sanity_check",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "test/test_engine.py",
+          "qualified": "test_more_ops",
+          "function": "test_more_ops",
+          "line_start": 28,
+          "line_end": 67
+        }
+      ],
+      "relationship": {
+        "kind": "unresolved_candidate_calls",
+        "sites": [
+          {
+            "file": "test/test_engine.py",
+            "caller": "test_sanity_check",
+            "line": 11,
+            "expression": "y.backward"
+          },
+          {
+            "file": "test/test_engine.py",
+            "caller": "test_sanity_check",
+            "line": 20,
+            "expression": "y.backward"
+          },
+          {
+            "file": "test/test_engine.py",
+            "caller": "test_more_ops",
+            "line": 42,
+            "expression": "g.backward"
+          },
+          {
+            "file": "test/test_engine.py",
+            "caller": "test_more_ops",
+            "line": 59,
+            "expression": "g.backward"
+          }
+        ],
+        "runtime_target_verified": false
+      },
+      "fact_provenance": "Python AST definitions/call sites and explicit structural checks",
+      "language_judgment": "unverified",
+      "human_reviewed": false
+    }
+  ],
+  "queries": [
+    {
+      "id": "m_backward-en",
+      "task_id": "m_backward",
+      "language": "en",
+      "question": "Where is `Value.backward` defined?"
+    },
+    {
+      "id": "m_backward-fr",
+      "task_id": "m_backward",
+      "language": "fr",
+      "question": "Où est définie `Value.backward` ?"
+    },
+    {
+      "id": "m_backward-zh",
+      "task_id": "m_backward",
+      "language": "zh",
+      "question": "`Value.backward` 定义在哪里？"
+    },
+    {
+      "id": "m_backward-mixed",
+      "task_id": "m_backward",
+      "language": "mixed",
+      "question": "Where se trouve `Value.backward` dans le code ?"
+    },
+    {
+      "id": "m_graph-en",
+      "task_id": "m_graph",
+      "language": "en",
+      "question": "Where does the code traverse the computation graph to propagate gradients?"
+    },
+    {
+      "id": "m_graph-fr",
+      "task_id": "m_graph",
+      "language": "fr",
+      "question": "Où le code parcourt-il le graphe de calcul pour propager les gradients ?"
+    },
+    {
+      "id": "m_graph-zh",
+      "task_id": "m_graph",
+      "language": "zh",
+      "question": "哪里通过遍历计算图传播梯度？"
+    },
+    {
+      "id": "m_graph-mixed",
+      "task_id": "m_graph",
+      "language": "mixed",
+      "question": "Where does le code parcourir le graphe pour propager les gradients ?"
+    },
+    {
+      "id": "m_callee-en",
+      "task_id": "m_callee",
+      "language": "en",
+      "question": "What does `Value.backward` call?"
+    },
+    {
+      "id": "m_callee-fr",
+      "task_id": "m_callee",
+      "language": "fr",
+      "question": "Qu'appelle `Value.backward` ?"
+    },
+    {
+      "id": "m_callee-zh",
+      "task_id": "m_callee",
+      "language": "zh",
+      "question": "`Value.backward`调用了哪些函数？"
+    },
+    {
+      "id": "m_callee-mixed",
+      "task_id": "m_callee",
+      "language": "mixed",
+      "question": "What does `Value.backward` call dans le graphe ?"
+    },
+    {
+      "id": "m_relu-en",
+      "task_id": "m_relu",
+      "language": "en",
+      "question": "Where is the rectified linear activation and its gradient implemented?"
+    },
+    {
+      "id": "m_relu-fr",
+      "task_id": "m_relu",
+      "language": "fr",
+      "question": "Où sont implémentés l'activation linéaire rectifiée et son gradient ?"
+    },
+    {
+      "id": "m_relu-zh",
+      "task_id": "m_relu",
+      "language": "zh",
+      "question": "哪里实现了整流线性激活及其梯度？"
+    },
+    {
+      "id": "m_relu-mixed",
+      "task_id": "m_relu",
+      "language": "mixed",
+      "question": "Where is l'activation linéaire rectifiée et son gradient implemented?"
+    },
+    {
+      "id": "m_ambiguous-en",
+      "task_id": "m_ambiguous",
+      "language": "en",
+      "question": "Where is `__call__` defined in the neural network module?"
+    },
+    {
+      "id": "m_ambiguous-fr",
+      "task_id": "m_ambiguous",
+      "language": "fr",
+      "question": "Où `__call__` est-il défini dans le module réseau neuronal ?"
+    },
+    {
+      "id": "m_ambiguous-zh",
+      "task_id": "m_ambiguous",
+      "language": "zh",
+      "question": "神经网络模块中的`__call__`定义在哪里？"
+    },
+    {
+      "id": "m_ambiguous-mixed",
+      "task_id": "m_ambiguous",
+      "language": "mixed",
+      "question": "Where is `__call__` défini dans le module réseau neuronal ?"
+    },
+    {
+      "id": "m_noanswer-en",
+      "task_id": "m_noanswer",
+      "language": "en",
+      "question": "Where is the Python method `Value.teleport` defined?"
+    },
+    {
+      "id": "m_noanswer-fr",
+      "task_id": "m_noanswer",
+      "language": "fr",
+      "question": "Où est définie la méthode Python `Value.teleport` ?"
+    },
+    {
+      "id": "m_noanswer-zh",
+      "task_id": "m_noanswer",
+      "language": "zh",
+      "question": "Python方法`Value.teleport`定义在哪里？"
+    },
+    {
+      "id": "m_noanswer-mixed",
+      "task_id": "m_noanswer",
+      "language": "mixed",
+      "question": "Where est définie la méthode Python `Value.teleport` ?"
+    },
+    {
+      "id": "s_auth-en",
+      "task_id": "s_auth",
+      "language": "en",
+      "question": "Where is `authenticate_user` defined?"
+    },
+    {
+      "id": "s_auth-fr",
+      "task_id": "s_auth",
+      "language": "fr",
+      "question": "Où est définie `authenticate_user` ?"
+    },
+    {
+      "id": "s_auth-zh",
+      "task_id": "s_auth",
+      "language": "zh",
+      "question": "`authenticate_user`定义在哪里？"
+    },
+    {
+      "id": "s_auth-mixed",
+      "task_id": "s_auth",
+      "language": "mixed",
+      "question": "Where est définie `authenticate_user` ?"
+    },
+    {
+      "id": "s_callee-en",
+      "task_id": "s_callee",
+      "language": "en",
+      "question": "What does `authenticate_user` call?"
+    },
+    {
+      "id": "s_callee-fr",
+      "task_id": "s_callee",
+      "language": "fr",
+      "question": "Qu'appelle `authenticate_user` ?"
+    },
+    {
+      "id": "s_callee-zh",
+      "task_id": "s_callee",
+      "language": "zh",
+      "question": "`authenticate_user`调用了哪些函数？"
+    },
+    {
+      "id": "s_callee-mixed",
+      "task_id": "s_callee",
+      "language": "mixed",
+      "question": "What does `authenticate_user` call dans le code ?"
+    },
+    {
+      "id": "s_hash-en",
+      "task_id": "s_hash",
+      "language": "en",
+      "question": "Where is a password transformed into a SHA-256 hash?"
+    },
+    {
+      "id": "s_hash-fr",
+      "task_id": "s_hash",
+      "language": "fr",
+      "question": "Où un mot de passe est-il transformé en empreinte SHA-256 ?"
+    },
+    {
+      "id": "s_hash-zh",
+      "task_id": "s_hash",
+      "language": "zh",
+      "question": "哪里将密码转换为SHA-256哈希？"
+    },
+    {
+      "id": "s_hash-mixed",
+      "task_id": "s_hash",
+      "language": "mixed",
+      "question": "Where is le mot de passe transformé en empreinte SHA-256 ?"
+    },
+    {
+      "id": "s_page-en",
+      "task_id": "s_page",
+      "language": "en",
+      "question": "Where are pagination bounds and page counts calculated?"
+    },
+    {
+      "id": "s_page-fr",
+      "task_id": "s_page",
+      "language": "fr",
+      "question": "Où sont calculées les limites et le nombre de pages ?"
+    },
+    {
+      "id": "s_page-zh",
+      "task_id": "s_page",
+      "language": "zh",
+      "question": "哪里计算分页范围和页数？"
+    },
+    {
+      "id": "s_page-mixed",
+      "task_id": "s_page",
+      "language": "mixed",
+      "question": "Where are les limites et le nombre de pages calculés ?"
+    },
+    {
+      "id": "s_session-en",
+      "task_id": "s_session",
+      "language": "en",
+      "question": "Where is `SessionManager.create_session` defined?"
+    },
+    {
+      "id": "s_session-fr",
+      "task_id": "s_session",
+      "language": "fr",
+      "question": "Où est définie `SessionManager.create_session` ?"
+    },
+    {
+      "id": "s_session-zh",
+      "task_id": "s_session",
+      "language": "zh",
+      "question": "`SessionManager.create_session`定义在哪里？"
+    },
+    {
+      "id": "s_session-mixed",
+      "task_id": "s_session",
+      "language": "mixed",
+      "question": "Where est définie `SessionManager.create_session` ?"
+    },
+    {
+      "id": "s_noanswer-en",
+      "task_id": "s_noanswer",
+      "language": "en",
+      "question": "Where is the Python method `SessionManager.encrypt_session` defined?"
+    },
+    {
+      "id": "s_noanswer-fr",
+      "task_id": "s_noanswer",
+      "language": "fr",
+      "question": "Où est définie la méthode Python `SessionManager.encrypt_session` ?"
+    },
+    {
+      "id": "s_noanswer-zh",
+      "task_id": "s_noanswer",
+      "language": "zh",
+      "question": "Python方法`SessionManager.encrypt_session`定义在哪里？"
+    },
+    {
+      "id": "s_noanswer-mixed",
+      "task_id": "s_noanswer",
+      "language": "mixed",
+      "question": "Where est définie la méthode Python `SessionManager.encrypt_session` ?"
+    },
+    {
+      "id": "m_caller-en",
+      "task_id": "m_caller",
+      "language": "en",
+      "question": "Who calls `Value.backward`?"
+    },
+    {
+      "id": "m_caller-fr",
+      "task_id": "m_caller",
+      "language": "fr",
+      "question": "Qui appelle `Value.backward` ?"
+    },
+    {
+      "id": "m_caller-zh",
+      "task_id": "m_caller",
+      "language": "zh",
+      "question": "谁调用`Value.backward`？"
+    },
+    {
+      "id": "m_caller-mixed",
+      "task_id": "m_caller",
+      "language": "mixed",
+      "question": "Who calls `Value.backward` dans les tests ?"
+    }
+  ]
+}

@@ -1,0 +1,615 @@
+{
+  "overall": {
+    "query_variants": 4,
+    "task_count": 1,
+    "eligible_tasks": 1,
+    "eligible_variants": 4,
+    "raw_failures": 0,
+    "translation_failures": 0,
+    "arms": {
+      "dense": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 1.0,
+        "recall": 0.5,
+        "all": 0
+      },
+      "bm25": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.4583333333333333,
+        "recall": 0.5,
+        "all": 0
+      },
+      "rrf": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.875,
+        "recall": 0.625,
+        "all": 0.25
+      },
+      "translation": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.625,
+        "recall": 0.875,
+        "all": 0.75
+      },
+      "graph_off": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.875,
+        "recall": 0.625,
+        "all": 0.25
+      },
+      "qualified": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.875,
+        "recall": 1.0,
+        "all": 1
+      },
+      "grounded": {
+        "eligible_tasks": 1,
+        "hit": 1,
+        "mrr": 0.875,
+        "recall": 0.625,
+        "all": 0.25
+      }
+    },
+    "mean_translation_llm_calls": 0.75,
+    "translation_fallbacks": 1
+  },
+  "by_language": {
+    "en": {
+      "query_variants": 1,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 1,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.3333333333333333,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        }
+      },
+      "mean_translation_llm_calls": 0,
+      "translation_fallbacks": 0
+    },
+    "fr": {
+      "query_variants": 1,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 1,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        }
+      },
+      "mean_translation_llm_calls": 1,
+      "translation_fallbacks": 0
+    },
+    "mixed": {
+      "query_variants": 1,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 1,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 1.0,
+          "all": 1
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        }
+      },
+      "mean_translation_llm_calls": 1,
+      "translation_fallbacks": 0
+    },
+    "zh": {
+      "query_variants": 1,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 1,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.5,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        }
+      },
+      "mean_translation_llm_calls": 1,
+      "translation_fallbacks": 1
+    }
+  },
+  "by_task_type": {
+    "cross_file": {
+      "query_variants": 4,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 4,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.4583333333333333,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.625,
+          "recall": 0.875,
+          "all": 0.75
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        }
+      },
+      "mean_translation_llm_calls": 0.75,
+      "translation_fallbacks": 1
+    }
+  },
+  "by_repository": {
+    "micrograd": {
+      "query_variants": 4,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 4,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.4583333333333333,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.625,
+          "recall": 0.875,
+          "all": 0.75
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        }
+      },
+      "mean_translation_llm_calls": 0.75,
+      "translation_fallbacks": 1
+    },
+    "sample_repo": {
+      "query_variants": 0,
+      "task_count": 0,
+      "eligible_tasks": 0,
+      "eligible_variants": 0,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "bm25": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "rrf": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "translation": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "graph_off": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "qualified": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        },
+        "grounded": {
+          "eligible_tasks": 0,
+          "hit": null,
+          "mrr": null,
+          "recall": null,
+          "all": null
+        }
+      },
+      "mean_translation_llm_calls": null,
+      "translation_fallbacks": 0
+    }
+  },
+  "by_task": {
+    "m_crossfile": {
+      "query_variants": 4,
+      "task_count": 1,
+      "eligible_tasks": 1,
+      "eligible_variants": 4,
+      "raw_failures": 0,
+      "translation_failures": 0,
+      "arms": {
+        "dense": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 1.0,
+          "recall": 0.5,
+          "all": 0
+        },
+        "bm25": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.4583333333333333,
+          "recall": 0.5,
+          "all": 0
+        },
+        "rrf": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "translation": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.625,
+          "recall": 0.875,
+          "all": 0.75
+        },
+        "graph_off": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        },
+        "qualified": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 1.0,
+          "all": 1
+        },
+        "grounded": {
+          "eligible_tasks": 1,
+          "hit": 1,
+          "mrr": 0.875,
+          "recall": 0.625,
+          "all": 0.25
+        }
+      },
+      "mean_translation_llm_calls": 0.75,
+      "translation_fallbacks": 1
+    }
+  },
+  "answers": {
+    "model": {
+      "cases": 0,
+      "task_count": 0,
+      "citation_status": {},
+      "truncated": 0,
+      "errors": 0,
+      "language_heuristic_denominator": 0,
+      "language_heuristic_matches": 0,
+      "no_answer_cases": 0,
+      "no_answer_abstention_detected_heuristic": 0,
+      "exact_build_topo_callsite_mentioned": 0,
+      "caller_callsite_observations_checked": 0,
+      "caller_callsite_observations_matched_source": 0,
+      "unseen_quoted_dotted_symbols_unverified_cases": 0,
+      "by_language": {},
+      "by_task": {},
+      "details": []
+    },
+    "model_paired": {
+      "cases": 0,
+      "task_count": 0,
+      "citation_status": {},
+      "truncated": 0,
+      "errors": 0,
+      "language_heuristic_denominator": 0,
+      "language_heuristic_matches": 0,
+      "no_answer_cases": 0,
+      "no_answer_abstention_detected_heuristic": 0,
+      "exact_build_topo_callsite_mentioned": 0,
+      "caller_callsite_observations_checked": 0,
+      "caller_callsite_observations_matched_source": 0,
+      "unseen_quoted_dotted_symbols_unverified_cases": 0,
+      "by_language": {},
+      "by_task": {},
+      "details": []
+    },
+    "evidence_first": {
+      "cases": 0,
+      "task_count": 0,
+      "citation_status": {},
+      "truncated": 0,
+      "errors": 0,
+      "language_heuristic_denominator": 0,
+      "language_heuristic_matches": 0,
+      "no_answer_cases": 0,
+      "no_answer_abstention_detected_heuristic": 0,
+      "exact_build_topo_callsite_mentioned": 0,
+      "caller_callsite_observations_checked": 0,
+      "caller_callsite_observations_matched_source": 0,
+      "unseen_quoted_dotted_symbols_unverified_cases": 0,
+      "by_language": {},
+      "by_task": {},
+      "details": []
+    }
+  }
+}
