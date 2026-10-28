@@ -1,248 +1,100 @@
-# RepoSage — Enterprise-Grade Codebase Intelligence System
+# Cross-Lingual Codebase GraphRAG
 
-RepoSage is a 100% offline, Agentic GraphRAG system designed for developers and engineering teams. By supplying a local directory path or a GitHub repository URL, users can query their codebase in natural language. The system autonomously retrieves context, traverses functional dependencies, and generates precise answers complete with exact file paths and line numbers.
+A local codebase assistant for finding and explaining source code from English, French, Chinese and mixed-language questions. The project is motivated by switching between Chinese, French and English while discussing the same code. It combines hybrid retrieval with Python source structure and returns inspectable source evidence.
 
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://python.org)
-[![React](https://img.shields.io/badge/React-18.3-61dafb.svg)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-5.2-646cff.svg)](https://vitejs.dev)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688.svg)](https://fastapi.tiangolo.com)
-[![LangGraph](https://img.shields.io/badge/LangGraph-0.2-red.svg)](https://langchain.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+This is an extended and substantially modified project based on [Repo-Sage](https://github.com/Ganesh-403/Repo-Sage), which supplied the original application architecture. This project adds multilingual query planning and evaluation, qualified Python source graphs, symbol grounding, structured evidence and evidence-first graph answers. See [licensing and provenance](docs/release_licensing.md) before redistribution.
 
----
+## Features and architecture
 
-## Overview
-
-Traditional Retrieval-Augmented Generation (RAG) systems fail on complex codebases due to arbitrary character-limit splitting and an inability to understand structural dependencies. RepoSage overcomes these limitations by combining:
-
-1. **Abstract Syntax Tree (AST) Chunking**: Code is parsed logically into atomic structural units (functions, classes) rather than arbitrary text chunks.
-2. **Knowledge Graphs (GraphRAG)**: Function-call dependencies are mapped at ingestion time. During retrieval, the engine dynamically injects caller and callee contexts, virtually eliminating missing-dependency hallucinations.
-3. **Autonomous Agentic Workflows**: Powered by LangGraph, the query engine operates autonomously, utilizing tools to execute semantic searches and proactively read specific files if further context is required.
-4. **Real-time SSE Streaming**: Employs Server-Sent Events (SSE) to stream answers token-by-token directly to a modern, animated React frontend.
-
-RepoSage operates entirely locally. It utilizes Ollama running reasoning models (such as `qwen3:4b` or `qwen2.5-coder:7b`), guaranteeing absolute privacy for proprietary codebases.
-
----
-
-## Core Capabilities
-
-- **State-of-the-Art Animated Frontend**: Rebuilt on React, Vite, Tailwind CSS, and Framer Motion with spring-physics charts, a technical mock terminal, and a collapsible dashboard sidebar.
-- **Double Mode Query Engine**:
-  - **Standard RAG Mode (SSE Streaming)**: Connects to `/query/stream` for near-instant, streamed token replies, complete with inline source tags.
-  - **Agent Mode**: Leverages LangGraph to actively investigate complex codebase queries through iterative tool execution (`semantic_search` and `read_file`).
-- **Parallelized Hybrid Search**: Executes dense vector retrieval (ChromaDB) and lexical keyword matching (BM25) in parallel using a python `ThreadPoolExecutor`, reducing I/O latency to <1s.
-- **Fast Ingestion Traversal Walk**: Replaced file globbing with `os.walk` directory pruning to bypass skipped directories (`.git`, `node_modules`, `.venv`, etc.) in-place, dramatically speeding up repository indexing.
-- **Contextual Retrieval (Anthropic Pattern)**: Auto-generates file-level summaries and prepends them to individual chunks, preserving macro-level context within micro-level retrievals.
-- **Cache-Accelerated Summaries**: Caches high-level repository summaries (`summary_cache.json`) to skip LLM analysis runs on subsequent dashboard loads.
-- **Precision Citation Badges**: Verifiable source locations formatted as interactive badges indicating `filename:line_number` in the chat window.
-- **Query Expansion Toggle**: Set `ENABLE_QUERY_EXPANSION=false` to skip reasoning model query expansion, speeding up query execution for local setups.
-
----
-
-## System Architecture
-
-### Phase 1: Ingestion Pipeline
+- AST-aware Python chunking, plus other language chunkers; Chroma dense and BM25 lexical search combined with RRF.
+- Optional EN/FR/ZH query rewriting, protected code identifiers and original-query fallback. Multilingual and experimental code-aware planning are disabled by default; see [configuration](backend/reposage/query/MULTILINGUAL_QUERY.md).
+- Qualified source graph and exact symbol lookup, with bounded one-hop source evidence and file/line metadata. Existing indexes without a v2 sidecar retain legacy behavior; see [source graph setup](backend/reposage/query/SOURCE_GRAPH.md).
+- Evidence-first answers for recognizable caller/callee questions with a qualified graph. Static references and unresolved calls are distinguished; a static edge does not prove runtime dispatch.
+- Standard RAG, streaming responses and LangGraph Agent mode. Agent fallback may use RAG without executing tools; inspect execution metadata rather than assuming tool use. Evidence IDs such as `[S1]` map to source records; valid citation syntax does not establish factual support.
 
 ```mermaid
-graph TD
-    A[Source Code <br/> GitHub or Local] --> B[Language-Aware Parser]
-    B -->|Python AST| C[Chunk Builder]
-    B -->|JS/TS Regex| C
-    C --> D[GraphRAG Builder <br/> Extracts Function Calls]
-    D --> E[(NetworkX Knowledge Graph)]
-    C --> F[Context Injector <br/> File-Level Summaries]
-    F --> G[Ollama Embeddings <br/> nomic-embed-text]
-    G --> H[(ChromaDB Vector Store)]
+flowchart LR
+  A[Repository] --> B[AST chunks and qualified source graph]
+  B --> C[Chroma vectors and BM25 documents]
+  Q[Original question] --> P[Optional multilingual rewrite]
+  P --> C
+  C --> R[RRF candidates]
+  R --> G[Bounded graph evidence and exact symbol lookup]
+  G --> E[Source IDs and source context]
+  E --> O[Evidence-first graph answer or model answer]
+  Q --> O
 ```
 
-1. **Source Resolution**: Accepts public GitHub URLs (cloned via GitPython) or local folders.
-2. **Pruned Ingestion traversal**: `os.walk` traverses files while ignoring excluded directories (`node_modules`, `.git`, `.venv`) before scanning, optimizing disk operations.
-3. **Language-Aware Parsing**: Files are parsed to extract structural units. Python uses `ast`; JavaScript/TypeScript uses regex patterns.
-4. **Graph Construction**: Constructs a NetworkX directed graph of function declarations and calls (`ast.Call`).
-5. **Context Injection & Vector Persistence**: Computes file summaries and appends them to individual chunks, which are then embedded and saved in ChromaDB alongside the call graph.
+The stack uses FastAPI, Python, LangChain/LangGraph, NetworkX, Chroma, Ollama, React and Vite. The local model can omit citations, answer in the wrong language or make unsupported code claims. Evidence remains separately visible; review source before relying on an explanation.
 
-### Phase 2: Query Pipeline (Dual Engine)
+## Evaluation
 
-```mermaid
-graph TD
-    Q[User Query] --> M{Mode Select}
-    M -->|Standard RAG| S[SSE Stream /query/stream]
-    M -->|Agent Mode| A[LangGraph Agent /query]
-    
-    S --> H[Parallel Hybrid Search]
-    A --> T[Agent Tool: semantic_search]
-    T --> H
-    
-    H --> P[Parallel Vector & BM25 Search]
-    P --> RRF[Reciprocal Rank Fusion]
-    RRF --> G[Graph Traversal: Fetch Callers/Callees]
-    G --> R[Response Generation]
-    
-    A -->|Refines Context| RF[Agent Tool: read_file]
-    RF --> A
-```
+These are small automated, unreviewed engineering experiments, not independent human validation or general performance estimates. The frozen V1 set has 13 task records and 52 variants, using micrograd and a **synthetic fixture**, not two independent upstream repositories. Only 9 of 11 answerable tasks had all exact chunks indexed. The task-macro MRR@5 averages the four language variants within each eligible task. Translation used extra LLM calls.
 
-1. **Streaming SSE (Standard RAG)**: Sends query directly to `/query/stream`, which retrieves context, runs graph traversal, and streams tokens to the client immediately.
-2. **Agentic Inference (Agent Mode)**: The LangGraph workflow controls Ollama, running semantic searches and iteratively invoking `read_file` tools to investigate code files.
-3. **Parallel Retrieval**: BM25 and ChromaDB lookups execute in parallel on separate threads, merged through Reciprocal Rank Fusion (RRF) to keep total search time under 1s.
-4. **Source citations**: Inline citation sources are delivered and rendered in real time on the UI.
+| V1: 9 eligible tasks | Dense | BM25 | Raw RRF | Translation RRF |
+|---|---:|---:|---:|---:|
+| MRR@5 | 0.587 | 0.275 | 0.516 | 0.495 |
 
----
+With identical raw RRF seeds, all-required-chunk context coverage was 0.694 with graph off, 0.806 with qualified graph, and 0.917 with exact grounding. Graph arms add context, so this is not equal-budget ranking improvement. A separate post-hoc cross-file supplement exposed a multi-symbol grounding regression; after the fallback fix qualified and grounded context both covered both targets in 4/4 variants, versus 1/4 graph off. Details: [V1 report](benchmarks/final_v1/REPORT.md) and [graph ablation](benchmarks/graph_ablation/README.md).
 
-## Getting Started
+A separate [ItsDangerous supplement](benchmarks/itsdangerous_supplement/REPORT.md) uses seven source-derived tasks at a pinned Pallets revision; only three answerable tasks (12 variants) had all exact targets indexed. Dense / BM25 / raw RRF / translation RRF Hit@5 were 12/12, 0/12, 12/12 and 12/12; MRR@5 was 0.792, 0, 0.425 and 0.425. Caller complete-context coverage was 0/4 graph off and 4/4 graph on, at additional context cost. The cross-module case remained 0/4. Correlated variants and incomplete labels do not establish general improvement.
 
-### Prerequisites
+## Try it
 
-- **Python 3.11** or higher
-- **Node.js 18** or higher (for the frontend)
-- **Ollama** running locally
-- **Git**
+With a micrograd index and v2 source graph available, example questions include:
 
-### 1. Model Configuration
+- EN: `What does Value.backward call?`
+- FR: `Qu'appelle Value.backward ?`
+- ZH: `Value.backward 调用了哪些函数？`
+- Mixed: `Who appelle Value.backward dans le graphe ?`
+- Identifier-free: `Where does the code traverse the computation graph to propagate gradients?`
 
-Pull the necessary models via Ollama. By default, RepoSage utilizes `qwen3:4b` or `qwen2.5-coder:7b` for inference, and `nomic-embed-text` for embeddings.
+Exact symbol lookup is conservative. Identifier-free questions rely on retrieval and can miss the relevant symbol. Answer language is separate from finding evidence, and model responses are not guaranteed to follow it.
 
-```bash
-ollama pull qwen3:4b
+## Windows PowerShell setup
+
+Prerequisites: Git, Python 3.11, Node.js compatible with the installed Vite version, and a running local Ollama service. Confirm `python --version` is 3.11 before creating the environment; on Windows, use the Python 3.11 executable explicitly if another version is first on PATH. A Python 3.13 fresh install here required Microsoft C++ build tools for `chroma-hnswlib`. From the project root:
+
+```powershell
+ollama pull qwen3:1.7b
 ollama pull nomic-embed-text
-```
-
-### 2. Environment Setup
-
-Copy the environment template:
-
-```bash
-cp .env.example .env
-```
-
-Review and adjust variables:
-```env
-# Required: Ollama base url
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:4b
-OLLAMA_EMBED_MODEL=nomic-embed-text
-
-# Optional: Disable query expansion to speed up local queries
-ENABLE_QUERY_EXPANSION=false
-
-# Optional: Chroma persist directory
-CHROMA_PERSIST_DIR=./chroma_db
-```
-
----
-
-## Running the Application
-
-### Option A: Running Locally (Standard Setup)
-
-#### 1. Backend Server (FastAPI)
-Configure virtual environment and start FastAPI on port `8000`:
-```bash
 cd backend
+python --version  # must be Python 3.11
 python -m venv .venv
-
-# Activate environment:
-# Linux/macOS:
-source .venv/bin/activate
-# Windows:
-.venv\Scripts\activate
-
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+$env:OLLAMA_MODEL = 'qwen3:1.7b'
+$env:OLLAMA_EMBED_MODEL = 'nomic-embed-text'
 python main.py
 ```
 
-#### 2. Frontend Client (React + Vite)
-In a new terminal window, install dependencies and start the Vite dev server on port `5173`:
-```bash
+In a second terminal:
+
+```powershell
 cd frontend
 npm install
 npm run dev
 ```
 
-Navigate to **[http://localhost:5173](http://localhost:5173)** in your browser.
+Open `http://localhost:5173` and index a repository via the UI; the API is at `http://localhost:8000/docs`. Indexing an existing repository name replaces that index, so use a new name or an isolated data directory. The API also supports remote GitHub URLs. For existing indexes, configure a compatible v2 sidecar using the source-graph instructions above. To enable multilingual rewriting for the backend process, set `$env:ENABLE_MULTILINGUAL_QUERY_PLANNING='true'` before starting it; set it to `false` or remove the variable to disable. See `.env.example` for other options; this setup does not require editing an existing `.env`.
 
----
+For Docker Compose, provide a separate `.env` with `OLLAMA_BASE_URL=http://host.docker.internal:11434` and `CHROMA_PERSIST_DIR=/app/chroma_db`, configure Ollama to accept the container connection, then run `docker compose up -d --build`. The frontend uses port 5173 and API uses 8001. Review network exposure before binding Ollama externally.
 
-### Option B: Running via Docker Compose
+Checks from the project root:
 
-Docker Compose runs the frontend and backend in isolated containers.
-
-1. **Set Environment Variables**:
-   In your `.env` file, point the backend container to your host machine's Ollama instance:
-   * **Windows/macOS:**
-     ```env
-     OLLAMA_BASE_URL=http://host.docker.internal:11434
-     CHROMA_PERSIST_DIR=/app/chroma_db
-     ```
-   * **Linux:** Point to your bridge IP (typically `http://172.17.0.1:11434`).
-   
-   *Make sure Ollama is allowed to receive external network requests by setting the host environment variable `OLLAMA_HOST=0.0.0.0` and restarting Ollama.*
-
-2. **Start the Containers**:
-   ```bash
-   docker compose up -d --build
-   ```
-
-3. **Access Services**:
-   - **Frontend App**: `http://localhost:5173`
-   - **Backend API Docs**: `http://localhost:8001/docs` (Note the backend container is mapped to port `8001` on the host system)
-   - **Backend Health Check**: `http://localhost:8001/health`
-
----
-
-## Project Structure
-
-```text
-reposage/
-├── backend/
-│   ├── main.py                     # FastAPI application entry point
-│   ├── reposage/
-│   │   ├── chunkers/
-│   │   │   ├── python_chunker.py   # AST parser and Call Graph extraction
-│   │   │   ├── js_chunker.py       # Regex JS/TS parser
-│   │   │   └── generic_chunker.py  # Line-based fallback mechanism
-│   │   ├── ingestion/
-│   │   │   ├── repo_indexer.py     # os.walk traversal ingestion & ChromaDB indexer
-│   │   │   ├── file_watcher.py     # Watchdog directory synchronization daemon
-│   │   │   └── docstring_gen.py    # Chunk context summary generator
-│   │   ├── query/
-│   │   │   ├── agent_engine.py     # LangGraph autonomous agent workflow
-│   │   │   ├── rag_engine.py       # Parallel Hybrid search and call graph traversal
-│   │   │   └── query_transformer.py # Single-flow query expander & bypass toggle
-│   │   └── analysis/
-│   │       └── repo_summarizer.py  # Cached repository macro-analysis generator
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── LandingPage.jsx     # Modern mock terminal & landing layout
-│   │   │   ├── RepoDashboard.jsx   # Collapsible dashboard sidebar & file listing
-│   │   │   └── ChatInterface.jsx   # Streaming SSE chat view & citation badge UI
-│   │   ├── utils/
-│   │   │   └── markdown.js         # Custom syntax-highlighting markdown parser
-│   │   ├── App.jsx                 # Routing shell and global states
-│   │   ├── index.css               # Tailwind & font styling rules
-│   │   └── main.jsx                # React mount entrypoint
-│   ├── package.json                # npm dependencies
-│   ├── vite.config.js              # Vite configuration (port 5173)
-│   └── Dockerfile                  # Lightweight Node.js build image
-├── docker-compose.yml              # Production container config (Frontend: 5173, Backend: 8001)
-├── .env.example                    # Template environment variables
-└── README.md                       # Product documentation
+```powershell
+backend/.venv/Scripts/python.exe -m pytest backend/tests -q
+backend/.venv/Scripts/python.exe -m pip check
+cd frontend
+npm run test
+npm run lint
+npm run build
 ```
 
----
+## Limitations and next work
 
-## Testing
+Python static analysis cannot fully resolve dynamic dispatch, inheritance or all imports. Short functions may not have exact indexed chunks, and graph sidecars must match the indexed revision. The local model's general explanations need source review; deterministic graph responses cover only narrow caller/callee cases. Priorities are better handling of missing exact chunks and conservative cross-module resolution, plus broader source-checked evaluation across real repositories.
 
-Execute the backend pytest suite:
+## Attribution and licensing
 
-```bash
-python -m pytest backend/tests/ -v
-```
-
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+The upstream Repo-Sage README says MIT, but its referenced license file was absent from the inspected tree. The exact upstream grant and copyright attribution remain unconfirmed; this repository must not be represented as unconditionally cleared for public redistribution. [Release licensing notes and issue draft](docs/release_licensing.md) record the evidence and outstanding actions. ItsDangerous is a separate BSD-3-Clause evaluation repository and is not bundled wholesale.
