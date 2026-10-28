@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 from ..ingestion.source_graph import SCHEMA
@@ -11,6 +12,40 @@ from .evidence import chunk_identity
 
 MAX_GRAPH_CHUNKS = 6
 MAX_GRAPH_CHARS = 8000
+
+
+@dataclass(frozen=True)
+class SymbolLookup:
+    status: str
+    node_id: str | None = None
+
+
+_DOTTED = re.compile(r"(?<![A-Za-z0-9_./\\])([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)(?![A-Za-z0-9_.])")
+_QUOTED_SYMBOL = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)`|(?<![A-Za-z0-9_./\\])([A-Za-z_][A-Za-z0-9_]*)\(\)")
+
+
+def resolve_symbol(graph, question):
+    """Resolve explicit identifiers exactly; abstain on conflicting matches."""
+    tokens = set(_DOTTED.findall(question))
+    tokens.update(a or b for a, b in _QUOTED_SYMBOL.findall(question))
+    nodes = graph["nodes"]
+    tokens.difference_update(Path(n["file"]).name for n in nodes)
+    if not tokens:
+        return SymbolLookup("not_applicable")
+    # A full repository-relative path is an optional exact disambiguator.
+    files = {n["file"] for n in nodes if re.search(r"(?<![A-Za-z0-9_./\\-])" + re.escape(n["file"]) + r"(?![A-Za-z0-9_./\\-])", question)}
+    def matches(n, token):
+        return n["qualified"] == token or ("." not in token and n["qualified"].rsplit(".", 1)[-1] == token)
+    candidates = [n for n in nodes if any(matches(n, token) for token in tokens) and (not files or n["file"] in files)]
+    ids = {n["id"] for n in candidates}
+    if not ids:
+        return SymbolLookup("not_found")
+    # If another explicit symbol is unknown, do not silently choose the one
+    # known token as the intent of a multi-symbol question.
+    recognized = {token for token in tokens if any(matches(n, token) for n in candidates)}
+    if len(ids) != 1 or not tokens.issubset(recognized):
+        return SymbolLookup("ambiguous")
+    return SymbolLookup("matched", next(iter(ids)))
 
 
 def requested_direction(question):
@@ -35,7 +70,36 @@ def load_graph(path, repo_name):
     return data
 
 
-def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH_CHUNKS, max_chars=MAX_GRAPH_CHARS):
+def graph_context(info, evidence):
+    """Attach source IDs where call-site chunks are actually in context."""
+    ids = {e["id"]: e["citation_id"] for e in evidence}
+    if info.get("lookup_status") in {"ambiguous", "not_found", "unavailable_chunk", "unavailable_budget"}:
+        return "\n\nExact symbol grounding was inconclusive; do not assume a unique target without evidence."
+    lines = []
+    for edge in info.get("relationships", []):
+        cite = ids.get(edge.get("caller_chunk_id"))
+        edge["caller_citation_id"] = cite
+        location = f"{edge['caller_file']}:{edge['call_line']}"
+        lines.append(f"Static reference: {edge['caller']} -> {edge['callee']} at {location}" + (f" [{cite}]" if cite else " (caller source not retrieved)"))
+    for call in info.get("unresolved", []):
+        cite = ids.get(call.get("caller_chunk_id"))
+        call["caller_citation_id"] = cite
+        lines.append(f"Unresolved call target: {call['expression']} in {call['file']}:{call['line']}" + (f" [{cite}]" if cite else " (caller source not retrieved)"))
+    if not lines:
+        return ""
+    selected, used = [], 0
+    for line in lines:
+        if used + len(line) + 1 > 4000:
+            continue
+        selected.append(line)
+        used += len(line) + 1
+    info["context_entries_omitted"] = len(lines) - len(selected)
+    if not selected:
+        return ""
+    return "\n\nGraph references are static, not proof of runtime dispatch. Unresolved targets are not confirmed relationships.\n" + "\n".join(selected)
+
+
+def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH_CHUNKS, max_chars=MAX_GRAPH_CHARS, diagnostics=None):
     """Use exact seed identities and only indexed, bounded one-hop evidence."""
     if max_chunks <= 0 or max_chars <= 0:
         return []
@@ -57,38 +121,72 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
         adjacency[edge["source"]]["callees"].append(edge["target"])
         adjacency[edge["target"]]["callers"].append(edge["source"])
     direction = requested_direction(question)
-    # A clear direction plus an explicit qualified symbol must not traverse
-    # unrelated RRF seeds when the requested symbol was not retrieved.
-    mentioned = set()
-    if direction != "both":
-        for node in graph["nodes"]:
-            name = node["qualified"]
-            if "." in name and re.search(r"(?<![\w.])" + re.escape(name) + r"(?![\w.])", question):
-                mentioned.add(node["id"])
+    lookup = resolve_symbol(graph, question)
+    info = diagnostics if diagnostics is not None else {}
+    info.update({"lookup_status": lookup.status, "direction": direction, "root": None, "relationships": [], "unresolved": []})
+    if lookup.status in {"ambiguous", "not_found"}:
+        return []
+    def usable(node):
+        doc = indexed.get(node.get("chunk_id"))
+        if doc is None: return None
+        m = doc.metadata
+        if (m.get("file") or "").replace("\\", "/") != node["file"]: return None
+        start, end = m.get("line_start"), m.get("line_end")
+        if not isinstance(start, int) or not isinstance(end, int) or not (start <= node["line_start"] <= node["line_end"] <= end): return None
+        if node.get("chunk_mapping") == "exact":
+            if (start, end, m.get("name")) != (node["line_start"], node["line_end"], node["qualified"].rsplit(".", 1)[-1]): return None
+        elif node.get("chunk_mapping") != "enclosing" or m.get("type") != "class":
+            return None
+        return doc
+
+    root = node_map.get(lookup.node_id)
+    if root:
+        root_doc = usable(root)
+        if root_doc is None:
+            info["lookup_status"] = "unavailable_chunk"
+            return []
+        info["root"] = {key: root[key] for key in ("id", "file", "qualified", "line_start", "line_end", "chunk_id", "chunk_mapping")}
+        for edge in graph["edges"]:
+            if ((direction in ("both", "callees") and edge["source"] == root["id"]) or
+                    (direction in ("both", "callers") and edge["target"] == root["id"])):
+                src, dst = node_map[edge["source"]], node_map[edge["target"]]
+                info["relationships"].append({"caller": src["qualified"], "caller_file": src["file"], "call_line": edge["line"],
+                    "expression": edge["expression"], "callee": dst["qualified"], "callee_file": dst["file"],
+                    "resolution": edge["resolution"], "status": "static_reference", "caller_chunk_id": src.get("chunk_id")})
+        root_name = root["qualified"].rsplit(".", 1)[-1]
+        for call in graph.get("unresolved", []):
+            # Matching the spelling of an unresolved caller is only a hint,
+            # never a claim that it actually targets the requested symbol.
+            if ((direction in ("both", "callees") and call["source"] == root["id"]) or
+                    (direction in ("both", "callers") and call["expression"].rsplit(".", 1)[-1] == root_name)):
+                src = node_map[call["source"]]
+                info["unresolved"].append({"caller": src["qualified"], "file": src["file"], "line": call["line"],
+                    "expression": call["expression"], "status": "unresolved_target", "caller_chunk_id": src.get("chunk_id")})
+        info["relationships_total"] = len(info["relationships"])
+        info["unresolved_total"] = len(info["unresolved"])
+        info["relationships"] = info["relationships"][:20]
+        info["unresolved"] = info["unresolved"][:20]
     candidate_priorities = {}
-    for seed_rank, seed in enumerate(seeds):
+    graph_seeds = [(0, root["id"])] if root else []
+    for seed_rank, seed in enumerate(seeds) if root is None else ():
         matches = exact_by_chunk.get(chunk_identity(seed, repo_name), [])
         # A chunk mapping to multiple definitions is not an unambiguous seed.
         if len(matches) != 1: continue
-        if mentioned and matches[0] not in mentioned: continue
+        graph_seeds.append((seed_rank, matches[0]))
+    for seed_rank, node_id in graph_seeds:
         for kind in (("callers", "callees") if direction == "both" else (direction,)):
-            for node_id in adjacency[matches[0]][kind]:
-                candidate_priorities.setdefault(node_id, seed_rank)
+            for neighbor_id in adjacency[node_id][kind]:
+                candidate_priorities.setdefault(neighbor_id, seed_rank)
     seen = {chunk_identity(d, repo_name) for d in seeds}
     candidates = sorted((node_map[node_id] for node_id in candidate_priorities),
                         key=lambda n: (candidate_priorities[n["id"]], n.get("chunk_mapping") != "exact", n["file"], n["line_start"], n["qualified"]))
+    if root is not None:
+        candidates = [root] + [node for node in candidates if node["id"] != root["id"]]
     added, used = [], 0
     for node in candidates:
         identity = node.get("chunk_id")
-        doc = indexed.get(identity)
+        doc = usable(node)
         if doc is None or identity in seen: continue
-        m = doc.metadata
-        if m.get("file", "").replace("\\", "/") != node["file"]: continue
-        start, end = m.get("line_start"), m.get("line_end")
-        if not isinstance(start, int) or not isinstance(end, int) or not (start <= node["line_start"] <= node["line_end"] <= end): continue
-        if node.get("chunk_mapping") not in {"exact", "enclosing"}: continue
-        if node["chunk_mapping"] == "exact" and (start, end, m.get("name")) != (node["line_start"], node["line_end"], node["qualified"].rsplit(".", 1)[-1]): continue
-        if node["chunk_mapping"] == "enclosing" and m.get("type") != "class": continue
         size = len(doc.page_content)
         if used + size > max_chars: continue
         extra = copy.copy(doc)
@@ -98,4 +196,7 @@ def enrich(graph, seeds, indexed_docs, repo_name, question, max_chunks=MAX_GRAPH
         seen.add(identity)
         used += size
         if len(added) >= max_chunks: break
+    if root and root["chunk_id"] not in seen:
+        info["lookup_status"] = "unavailable_budget"
+        return []
     return added

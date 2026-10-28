@@ -3,6 +3,7 @@ import logging
 import time
 import operator
 import re
+import copy
 from typing import TypedDict, Annotated, Sequence, Optional
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langgraph.graph import StateGraph, END
@@ -12,6 +13,7 @@ from langchain_ollama import ChatOllama
 from .rag_engine import CodeRAGEngine
 from .multilingual_query import PlannerConfig
 from .evidence import audit_citations
+from .source_graph import graph_context
 from ..security import normalize_repo_relative_path, resolve_repo_file, validate_repo_name
 
 logger = logging.getLogger(__name__)
@@ -21,6 +23,7 @@ class AgentState(TypedDict):
     repo_name: str
     original_question: str
     evidence: Annotated[list[dict], operator.add]
+    graph_traces: Annotated[list[dict], operator.add]
     
 class CodeAgentEngine:
     """Agentic query engine using LangGraph and tool calling."""
@@ -101,6 +104,7 @@ class CodeAgentEngine:
             
             tool_messages = []
             retrieved_evidence = []
+            graph_traces = []
             for tool_call in last_message.tool_calls:
                 tool_name = tool_call["name"]
                 tool_args = tool_call["args"]
@@ -111,7 +115,9 @@ class CodeAgentEngine:
                     if tool_name == "semantic_search":
                         planner = getattr(self.rag_engine, "multilingual_planner", None)
                         parsed = semantic_search.args_schema.model_validate(tool_args)
-                        if (planner is not None and planner.config.enabled) or getattr(self.rag_engine, "code_aware_planner", None) is not None:
+                        if ((planner is not None and planner.config.enabled)
+                                or getattr(self.rag_engine, "code_aware_planner", None) is not None
+                                or getattr(self.rag_engine, "source_graph", None) is not None):
                             search_result = run_semantic_search(parsed.query, state["original_question"])
                         else:
                             search_result = run_semantic_search(parsed.query)
@@ -127,6 +133,10 @@ class CodeAgentEngine:
                         remapped = re.sub(r"\[S\d+\]", lambda m: f"[{mapping.get(m.group()[1:-1], m.group()[1:-1])}]", search_result["answer"])
                         references = [f"[{known[e['id']]['citation_id']}] {e['file']}:{e['line_start']}" for e in search_result.get("evidence", [])]
                         result = remapped + "\n\nSources: " + ", ".join(references)
+                        graph = copy.deepcopy(search_result.get("graph") or {})
+                        if graph:
+                            result += graph_context(graph, list(known.values()))
+                            graph_traces.append(graph)
                     elif tool_name == "read_file":
                         result = read_file.invoke(tool_args)
                     else:
@@ -138,7 +148,7 @@ class CodeAgentEngine:
                     
                 tool_messages.append(ToolMessage(content=str(result), tool_call_id=tool_call["id"]))
                 
-            return {"messages": tool_messages, "evidence": retrieved_evidence}
+            return {"messages": tool_messages, "evidence": retrieved_evidence, "graph_traces": graph_traces}
             
         def should_continue(state: AgentState) -> str:
             messages = state["messages"]
@@ -204,7 +214,7 @@ class CodeAgentEngine:
         
         try:
             result = self.app.invoke(
-                {"messages": messages, "repo_name": self.repo_name, "original_question": question, "evidence": []},
+                {"messages": messages, "repo_name": self.repo_name, "original_question": question, "evidence": [], "graph_traces": []},
                 config={"recursion_limit": 10}
             )
             final_message = result["messages"][-1].content
@@ -221,6 +231,7 @@ class CodeAgentEngine:
                 "sources": [f"{item['file']}:{item['line_start']}" for item in evidence],
                 "chunks_used": len(evidence),
                 "evidence": evidence,
+                "graph_traces": result.get("graph_traces", []),
                 "citation_audit": audit_citations(final_message, evidence),
                 "tools_executed": True,
                 "execution_mode": "agent",

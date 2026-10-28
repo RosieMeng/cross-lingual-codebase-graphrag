@@ -79,6 +79,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
               sources: data.sources || [],
               evidence: data.evidence || [],
               citationAudit: data.citation_audit,
+              graphTraces: data.graph_traces?.length ? data.graph_traces : (data.graph?.lookup_status ? [data.graph] : []),
               executionMode: data.execution_mode,
               answerTruncated: data.answer_truncated
             };
@@ -167,7 +168,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   const updated = [...prev];
                   const lastMsg = updated[updated.length - 1];
                   if (lastMsg && lastMsg.role === 'assistant') {
-                    updated[updated.length - 1] = { ...lastMsg, sources: data.sources || [], evidence: data.evidence || [], citationAudit: data.citation_audit };
+                    updated[updated.length - 1] = { ...lastMsg, sources: data.sources || [], evidence: data.evidence || [], citationAudit: data.citation_audit, graphTraces: data.graph ? [data.graph] : [] };
                   }
                   return updated;
                 });
@@ -274,7 +275,7 @@ export default function ChatInterface({ repo, messages, setMessages }) {
                   <p className="mt-3 text-xs text-amber-300">The answer reached its length limit and may be incomplete.</p>
                 )}
 
-                {m.role === 'assistant' && m.content && <EvidencePanel evidence={m.evidence} citationAudit={m.citationAudit} />}
+                {m.role === 'assistant' && m.content && <EvidencePanel evidence={m.evidence} citationAudit={m.citationAudit} graphTraces={m.graphTraces} />}
               </div>
             </motion.div>
           ))

@@ -1,6 +1,7 @@
 """Production qualified graph and graph-to-context regressions."""
 from pathlib import Path
 import sys
+import pytest
 
 from langchain_core.documents import Document
 
@@ -9,7 +10,7 @@ from reposage.chunkers.python_chunker import PythonASTChunker
 from reposage.ingestion.source_graph import build_source_graph, write_graph
 from reposage.query.evidence import chunk_identity, evidence_from_docs
 from reposage.query.rag_engine import CodeRAGEngine
-from reposage.query.source_graph import enrich, load_graph, requested_direction
+from reposage.query.source_graph import enrich, load_graph, requested_direction, resolve_symbol
 
 
 def fixture(tmp_path):
@@ -54,7 +55,7 @@ def test_direction_dedup_budget_and_source_context(tmp_path):
     assert requested_direction("Who does caller call?") == "callees"
     assert requested_direction("谁调用 helper？") == "callers"
     assert requested_direction("Explain helper") == "both"
-    assert not enrich(graph, [helper], docs, "fixture", "Who calls A.run?")
+    assert [(d.metadata["file"], d.metadata["name"]) for d in enrich(graph, [helper], docs, "fixture", "Who calls A.run?")] == [("a.py", "run")]
     assert len(enrich(graph, [helper], docs, "fixture", "Explain helper", max_chunks=1)) == 1
     assert not enrich(graph, [helper], docs, "fixture", "Who calls helper?", max_chars=1)
     assert not enrich(graph, [helper, caller], docs, "fixture", "What does caller call?")
@@ -77,6 +78,72 @@ def test_traversal_prefers_higher_ranked_seed_before_budget_cutoff(tmp_path):
     assert [(d.metadata["file"], d.metadata["name"]) for d in directed] == [("a.py", "A")]
 
 
+def test_exact_symbol_lookup_ambiguous_names_and_file_context(tmp_path):
+    docs, graph = fixture(tmp_path)
+    assert resolve_symbol(graph, "Who calls A.run?").status == "matched"
+    assert resolve_symbol(graph, "谁调用A.run？").status == "matched"
+    assert resolve_symbol(graph, "Who calls `caller`?").status == "ambiguous"
+    selected = resolve_symbol(graph, "Who calls `caller` in a.py?")
+    assert selected.status == "matched"
+    assert next(n for n in graph["nodes"] if n["id"] == selected.node_id)["file"] == "a.py"
+    assert resolve_symbol(graph, "Who calls PrefixA.run?").status == "not_found"
+    assert resolve_symbol(graph, "Where are caller functions?").status == "not_applicable"
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    details = {}
+    assert enrich(graph, [helper], docs, "fixture", "Who calls `caller`?", diagnostics=details) == []
+    assert details["lookup_status"] == "ambiguous"
+
+
+def test_duplicate_qualified_symbols_require_exact_file_context(tmp_path):
+    for file in ("a.py", "b.py"):
+        (tmp_path / file).write_text("class A:\n    def run(self):\n        pass\n", encoding="utf-8")
+    graph = build_source_graph(tmp_path, [], "fixture")
+    assert resolve_symbol(graph, "Who calls A.run?").status == "ambiguous"
+    result = resolve_symbol(graph, "Who calls A.run in b.py?")
+    assert result.status == "matched"
+    assert next(n for n in graph["nodes"] if n["id"] == result.node_id)["file"] == "b.py"
+    assert resolve_symbol(graph, "Who calls A.run in xb.py?").status == "ambiguous"
+
+
+def test_exact_root_missing_from_rrf_enters_context_with_callsite(tmp_path):
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    details = {}
+    added = enrich(graph, [helper], docs, "fixture", "What does A.run call?", diagnostics=details)
+    assert [(d.metadata["file"], d.metadata["name"]) for d in added] == [("a.py", "run"), ("a.py", "A")]
+    assert details["lookup_status"] == "matched"
+    assert details["root"]["qualified"] == "A.run"
+    assert [(e["caller"], e["callee"], e["status"]) for e in details["relationships"]] == [("A.run", "A.short", "static_reference")]
+    assert details["relationships"][0]["call_line"] == 18
+
+
+def test_unresolved_call_is_reported_as_unconfirmed(tmp_path):
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    details = {}
+    enrich(graph, [helper], docs, "fixture", "What does unknown() call?", diagnostics=details)
+    assert details["lookup_status"] == "matched"
+    assert not details["relationships"]
+    assert [(u["expression"], u["status"]) for u in details["unresolved"]] == [("obj.missing", "unresolved_target")]
+
+
+@pytest.mark.parametrize("question,direction", [
+    ("What does A.run call?", "callees"),
+    ("Qu'appelle A.run ?", "callees"),
+    ("A.run调用了哪些函数？", "callees"),
+    ("What does A.run call pour le calcul？", "callees"),
+])
+def test_multilingual_exact_root_uses_same_source_identity(tmp_path, question, direction):
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["name"] == "helper")
+    details = {}
+    added = enrich(graph, [helper], docs, "fixture", question, diagnostics=details)
+    assert details["lookup_status"] == "matched"
+    assert details["direction"] == direction
+    assert details["root"]["qualified"] == "A.run"
+    assert any(d.metadata["name"] == "run" for d in added)
+
+
 def test_unmapped_and_stale_chunks_are_not_used(tmp_path):
     docs, graph = fixture(tmp_path)
     seed = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
@@ -85,6 +152,11 @@ def test_unmapped_and_stale_chunks_are_not_used(tmp_path):
         if d.metadata["file"] == "b.py" and d.metadata["name"] == "cross": d.page_content += "# changed"
     result = enrich(graph, [seed], changed, "fixture", "Who calls helper?")
     assert [(d.metadata["file"], d.metadata["name"]) for d in result] == [("a.py", "caller")]
+    for d in changed:
+        if d.metadata["file"] == "a.py" and d.metadata["name"] == "run": d.page_content += "# stale"
+    info = {}
+    assert enrich(graph, [seed], changed, "fixture", "What does A.run call?", diagnostics=info) == []
+    assert info["lookup_status"] == "unavailable_chunk"
     path = tmp_path / "graph.json"
     write_graph(graph, path)
     assert load_graph(path, "fixture")["schema"] == graph["schema"]
@@ -137,6 +209,29 @@ def test_real_rag_path_sends_graph_source_to_generation(tmp_path):
     assert all(f"[{e['citation_id']}] {e['file']}:{e['line_start']}" in captured[1].content for e in graph_evidence)
     assert all(f"[lines {e['line_start']}-{e['line_end']}]" in captured[1].content for e in graph_evidence)
     assert result["citation_audit"]["status"] == "matched"
+
+
+def test_rag_returns_grounded_root_and_cited_callsite(tmp_path):
+    from types import SimpleNamespace
+    docs, graph = fixture(tmp_path)
+    helper = next(d for d in docs if d.metadata["file"] == "a.py" and d.metadata["name"] == "helper")
+    retriever = SimpleNamespace(docs=docs, k=1, invoke=lambda _: [helper])
+    captured = []
+    engine = CodeRAGEngine.__new__(CodeRAGEngine)
+    engine.repo_name = "fixture"
+    engine.vectorstore = SimpleNamespace(as_retriever=lambda **_: retriever)
+    engine.bm25_retriever = retriever
+    engine.query_transformer = SimpleNamespace(expand_query=lambda q: [q])
+    engine.graph = None
+    engine.source_graph = graph
+    engine.llm = SimpleNamespace(invoke=lambda messages: (captured.extend(messages), SimpleNamespace(content="See [S2].", response_metadata={}))[1])
+    result = engine.query("What does A.run call?", k=1)
+    assert result["graph"]["root"]["qualified"] == "A.run"
+    relation = result["graph"]["relationships"][0]
+    assert relation["caller_citation_id"] == "S2"
+    assert "at a.py:18 [S2]" in captured[1].content
+    assert result["evidence"][1]["file"] == "a.py"
+    assert result["evidence"][1]["line_start"] == 17
 
 
 def test_missing_explicit_graph_does_not_fall_back_to_legacy(tmp_path):

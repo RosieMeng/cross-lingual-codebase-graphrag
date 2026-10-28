@@ -29,7 +29,7 @@ from .query_transformer import QueryTransformer
 from .multilingual_query import MultilingualQueryPlanner, PlannerConfig, ollama_rewriter, detect_language
 from .code_aware_query import CodeAwareQueryPlanner
 from .evidence import evidence_from_docs, audit_citations, chunk_identity
-from .source_graph import enrich as enrich_source_graph, load_graph as load_source_graph
+from .source_graph import enrich as enrich_source_graph, load_graph as load_source_graph, graph_context
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +266,7 @@ class CodeRAGEngine:
 
     def _retrieve_and_fuse(self, question: str, k: int, stage_observer=None,
                            original_question: str | None = None, plan_observer=None,
-                           retrieval_plan=None) -> tuple[list, list[str]]:
+                           retrieval_plan=None, graph_observer=None) -> tuple[list, list[str]]:
         """Retrieve relevant code chunks and enrich context in parallel using a ThreadPoolExecutor."""
         # Expand queries once
         planner = getattr(self, "multilingual_planner", None)
@@ -352,9 +352,13 @@ class CodeRAGEngine:
         source_graph = getattr(self, "source_graph", None)
         if source_graph and self.bm25_retriever:
             try:
+                graph_info = {}
                 graph_context_docs = enrich_source_graph(source_graph, docs, self.bm25_retriever.docs,
                                                          getattr(self, "repo_name", None),
-                                                         question if original_question is None else original_question)
+                                                         question if original_question is None else original_question,
+                                                         diagnostics=graph_info)
+                if graph_observer:
+                    graph_observer(graph_info)
                 if stage_observer:
                     stage_observer("graph_enrichment", graph_context_docs)
                 docs.extend(graph_context_docs)
@@ -417,7 +421,8 @@ class CodeRAGEngine:
         )
 
         # Retrieve documents concurrently
-        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question if retrieval_original_question is None else retrieval_original_question)
+        graph_info = {}
+        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question if retrieval_original_question is None else retrieval_original_question, graph_observer=graph_info.update)
 
         evidence = evidence_from_docs(docs, self.repo_name)
         if not evidence:
@@ -429,10 +434,11 @@ class CodeRAGEngine:
                 "chunks_used": 0,
                 "evidence": [],
                 "citation_audit": audit_citations("", []),
+                "graph": graph_info,
             }
 
         # Format context and build prompt
-        context = self._format_context(docs)
+        context = self._format_context(docs) + graph_context(graph_info, evidence)
 
         messages = [
             SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" +
@@ -453,6 +459,7 @@ class CodeRAGEngine:
             "chunks_used": len(docs),
             "evidence": evidence,
             "citation_audit": audit_citations(answer, evidence),
+            "graph": graph_info,
             "answer_truncated": getattr(response, "response_metadata", {}).get("done_reason") == "length",
         }
 
@@ -480,7 +487,8 @@ class CodeRAGEngine:
         )
 
         # Retrieve documents concurrently
-        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question)
+        graph_info = {}
+        docs, sources = self._retrieve_and_fuse(standalone_question, k, original_question=question, graph_observer=graph_info.update)
 
         evidence = evidence_from_docs(docs, self.repo_name)
         if not evidence:
@@ -488,10 +496,11 @@ class CodeRAGEngine:
                 "type": "token",
                 "content": "I couldn't find any relevant code in the indexed repository.",
             }
+            yield {"type": "sources", "sources": [], "evidence": [], "citation_audit": audit_citations("", []), "graph": graph_info}
             yield {"type": "done"}
             return
 
-        context = self._format_context(docs)
+        context = self._format_context(docs) + graph_context(graph_info, evidence)
 
         messages = [
             SystemMessage(content=SYSTEM_PROMPT.format(repo_name=self.repo_name) + "\n" + _answer_language_instruction(question)),
@@ -514,7 +523,7 @@ class CodeRAGEngine:
 
         # Send sources at the end
         yield {"type": "sources", "sources": [f"{item['file']}:{item['line_start']}" for item in evidence], "evidence": evidence,
-               "citation_audit": audit_citations("".join(answer_parts), evidence)}
+               "citation_audit": audit_citations("".join(answer_parts), evidence), "graph": graph_info}
         yield {"type": "done", "answer_truncated": truncated}
 
     def get_collection_stats(self) -> dict:

@@ -38,3 +38,15 @@ test('reports missing citations without inventing evidence', () => {
   assert.match(html, /No source ID citations/);
   assert.doesNotMatch(html, /Retrieved evidence/);
 });
+
+test('shows static references and unresolved calls without asserting targets', () => {
+  const html = renderToStaticMarkup(React.createElement(EvidencePanel, {
+    graphTraces: [{ lookup_status: 'matched', root: { qualified: 'Value.backward', file: 'micrograd/engine.py', line_start: 54, line_end: 70 },
+      relationships: [{ caller: 'Value.backward', callee: 'Value.backward.build_topo', caller_file: 'micrograd/engine.py', call_line: 65, caller_citation_id: 'S1' }],
+      unresolved: [{ expression: '<dynamic>.backward', file: 'test/test_engine.py', line: 11, caller_citation_id: 'S2' }] }],
+  }));
+  assert.match(html, /runtime target not verified/);
+  assert.match(html, /micrograd\/engine\.py:65 \[S1\]/);
+  assert.match(html, /Unresolved call; target not established/);
+  assert.match(html, /&lt;dynamic&gt;\.backward/);
+});

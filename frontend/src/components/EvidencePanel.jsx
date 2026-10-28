@@ -1,4 +1,4 @@
-export default function EvidencePanel({ evidence = [], citationAudit }) {
+export default function EvidencePanel({ evidence = [], citationAudit, graphTraces = [] }) {
   return (
     <>
       {citationAudit?.status === 'unsupported' && (
@@ -22,6 +22,23 @@ export default function EvidencePanel({ evidence = [], citationAudit }) {
           </div>
         </div>
       )}
+      {graphTraces.filter(graph => graph?.lookup_status && graph.lookup_status !== 'not_applicable').map((graph, index) => (
+        <details key={index} className="mt-3 text-xs text-slate-400">
+          <summary>Symbol and call-site information</summary>
+          {graph.root ? (
+            <p>Grounded {graph.root.qualified}: {graph.root.file}:{graph.root.line_start}–{graph.root.line_end}</p>
+          ) : (
+            <p>Exact symbol lookup: {graph.lookup_status}. No unique target was established.</p>
+          )}
+          {(graph.relationships || []).map((edge, i) => (
+            <p key={`r-${i}`}>Static reference (runtime target not verified): {edge.caller} → {edge.callee} at {edge.caller_file}:{edge.call_line}{edge.caller_citation_id ? ` [${edge.caller_citation_id}]` : ' (source not retrieved)'}</p>
+          ))}
+          {(graph.unresolved || []).map((call, i) => (
+            <p key={`u-${i}`}>Unresolved call; target not established: {call.expression} at {call.file}:{call.line}{call.caller_citation_id ? ` [${call.caller_citation_id}]` : ' (source not retrieved)'}</p>
+          ))}
+          {(graph.relationships_total > (graph.relationships || []).length || graph.unresolved_total > (graph.unresolved || []).length) && <p>Additional graph entries were omitted.</p>}
+        </details>
+      ))}
     </>
   );
 }

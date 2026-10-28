@@ -30,6 +30,14 @@ def test_citation_audit_checks_lines_and_unknown_references():
     assert audit_citations("No citation", evidence)["status"] == "not_detected"
 
 
+def test_query_response_preserves_graph_and_agent_traces():
+    from main import QueryResponse
+    graph = {"lookup_status": "matched", "unresolved": [{"status": "unresolved_target"}]}
+    data = QueryResponse(answer="answer", sources=[], chunks_used=0, graph=graph, graph_traces=[graph]).model_dump()
+    assert data["graph"] == graph
+    assert data["graph_traces"] == [graph]
+
+
 def test_agent_normal_semantic_tool_returns_retrieved_evidence(monkeypatch):
     import reposage.query.agent_engine as module
     item = evidence_from_docs([Document(page_content="def foo(): pass", metadata={"file": "a.py", "name": "foo", "line_start": 3, "line_end": 5, "type": "function"})])[0]
@@ -78,6 +86,37 @@ def test_agent_remaps_local_source_ids_across_tool_calls(monkeypatch):
     result = module.CodeAgentEngine("sample").query("find both")
     assert [(e["citation_id"], e["file"]) for e in result["evidence"]] == [("S1", "a.py"), ("S2", "b.py")]
     assert result["citation_audit"]["cited"] == ["S1", "S2"]
+
+
+def test_agent_preserves_original_question_and_remaps_graph_citations(monkeypatch):
+    import reposage.query.agent_engine as module
+    first = evidence_from_docs([Document(page_content="a", metadata={"file": "a.py", "name": "a", "line_start": 1, "line_end": 2})])[0]
+    second = evidence_from_docs([Document(page_content="b", metadata={"file": "b.py", "name": "b", "line_start": 5, "line_end": 6})])[0]
+    class Model:
+        def __init__(self, **kwargs): self.calls = 0
+        def bind_tools(self, tools): return self
+        def invoke(self, messages):
+            self.calls += 1
+            if self.calls == 1:
+                return AIMessage(content="", tool_calls=[{"name": "semantic_search", "args": {"query": "a"}, "id": "one"},
+                    {"name": "semantic_search", "args": {"query": "b"}, "id": "two"}])
+            assert "at b.py:5 [S2]" in messages[-1].content
+            return AIMessage(content="See [S2].")
+    class Rag:
+        def __init__(self, **kwargs):
+            self.multilingual_planner = None
+            self.source_graph = {}
+        def query(self, query, **kwargs):
+            assert kwargs["retrieval_original_question"] == "Who calls A.run?"
+            item = first if query == "a" else second
+            return {"answer": "Found [S1].", "sources": [], "evidence": [item],
+                    "graph": {"relationships": [{"caller_chunk_id": item["id"], "caller": "caller", "callee": "target",
+                                                  "caller_file": item["file"], "call_line": item["line_start"]}], "unresolved": []}}
+    monkeypatch.setattr(module, "ChatOllama", Model)
+    monkeypatch.setattr(module, "CodeRAGEngine", Rag)
+    result = module.CodeAgentEngine("sample").query("Who calls A.run?")
+    assert result["tools_executed"] is True
+    assert [g["relationships"][0]["caller_citation_id"] for g in result["graph_traces"]] == ["S1", "S2"]
 
 
 def test_agent_no_tool_fallback_preserves_genuine_rag_evidence(monkeypatch):
